@@ -327,8 +327,8 @@
 </div>
 
 <div id="toast-notificacao" class="oculto" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px; width:max-content; max-width:90%;">
-    <span class="material-symbols-outlined" style="color:#f59e0b;">notifications_active</span>
-    <span id="toast-mensagem">Atendimento em 5 minutos!</span>
+    <span class="material-symbols-outlined" id="toast-icone" style="color:#f59e0b;">notifications_active</span>
+    <span id="toast-mensagem">Aviso!</span>
 </div>
 
 <script>
@@ -521,9 +521,6 @@
         });
     }
 
-    // ==========================================
-    // A MÁGICA DA BOLINHA DE NOTIFICAÇÃO
-    // ==========================================
     function atualizarBadgeNotificacoes() {
         let naoLidos = 0;
         muralNotificacoes.forEach(aviso => {
@@ -569,7 +566,6 @@
                 let ag = agendamentosDestaSala[idUnico];
                 qtdAgendamentos++;
                 
-                // Se a hora chegou, ele entra na sala virtualmente (esperando clicar finalizar)
                 if (isHoje && horaAtualStr >= ag.inicio) {
                     if (!ocupantesAtivos.some(o => o.terapeuta === ag.nome && o.horarioTexto && o.horarioTexto.includes(ag.inicio))) {
                         ocupantesAtivos.push({
@@ -620,14 +616,18 @@
                         let btnLiberar = "";
                         if (usuarioAtual === 'admin' || ocupante.terapeuta === nomeUsuarioAtual) {
                             if (ocupante.isAgendaVirtual) {
-                                // Se já passou da hora do fim, fica vermelho de Atrasado
                                 let atrasado = horaAtualStr > ocupante.fim;
                                 let btnCor = atrasado ? '#ef4444' : '#10b981';
                                 let txtBtn = atrasado ? 'Encerrar' : 'Finalizar';
                                 
                                 btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="concluirAtendimentoAgendado(${i}, '${ocupante.idAgenda}', '${ocupante.terapeuta}', '${ocupante.paciente}', '${ocupante.sindrome}', ${ocupante.tempoTotalDefinido}, '${ocupante.inicio}', '${ocupante.fim}')"><span class="material-symbols-outlined" style="font-size:14px; margin:0;">check</span> ${txtBtn}</button>`;
                             } else {
-                                btnLiberar = `<button class="btn-liberar" onclick="fazerCheckout(${i-1}, ${index})">Liberar</button>`;
+                                let horFimManual = ocupante.horarioTexto ? ocupante.horarioTexto.split(' às ')[1] : "23:59";
+                                let atrasado = horaAtualStr > horFimManual;
+                                let btnCor = atrasado ? '#ef4444' : '#ef4444'; // Manual checkin usa vermelho pra liberar sempre
+                                let txtBtn = atrasado ? 'Encerrar' : 'Liberar';
+
+                                btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="fazerCheckout(${i-1}, ${index})">${txtBtn}</button>`;
                             }
                         }
 
@@ -654,7 +654,6 @@
                 conteudoHTML += `<div class="aviso-dia-diferente"><span class="material-symbols-outlined icon-sm">calendar_month</span> Exibindo data reservada.</div>`;
             }
             
-            // A NOVA GAVETA DE AGENDA
             if (qtdAgendamentos > 0) {
                 conteudoHTML += `
                     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f2f5;">
@@ -672,9 +671,8 @@
         }
     }
 
-    // Ação do botão "Finalizar" de um atendimento que veio direto da agenda
     function concluirAtendimentoAgendado(numSala, idAgenda, terapeuta, paciente, sindrome, tempoTotal, inicio, fim) {
-        if (!confirm("Finalizar este atendimento agendado e registrar na Auditoria?")) return;
+        if (!confirm("Finalizar este atendimento e registrar na Auditoria?")) return;
 
         let novoRegistro = { 
             terapeuta: terapeuta, 
@@ -683,7 +681,7 @@
             entrada: Date.now(), 
             saida: Date.now(),
             tempoTotal: tempoTotal, 
-            horarioTexto: `${inicio} às ${fim}`, // Guarda o texto exato para a auditoria
+            horarioTexto: `${inicio} às ${fim}`, 
             pacienteInfo: `${paciente} (${sindrome})`
         };
         
@@ -693,7 +691,7 @@
 
 
     // ==========================================
-    // NOVA JANELA: VER AGENDA DA SALA
+    // JANELA: VER AGENDA DA SALA 
     // ==========================================
     function abrirModalAgendaSala(numeroSala) {
         salaAtualModalAgenda = numeroSala;
@@ -711,7 +709,6 @@
         const termo = document.getElementById('pesquisa-agenda-modal').value.toLowerCase();
 
         let agendamentosDaSala = agendaDoDia[`sala_${salaAtualModalAgenda}`] || {};
-        
         let arrayAg = [];
         for(let id in agendamentosDaSala) { arrayAg.push({id: id, ...agendamentosDaSala[id]}); }
         arrayAg.sort((a,b) => a.inicio.localeCompare(b.inicio));
@@ -748,7 +745,7 @@
 
 
     // ==========================================
-    // FISCAL DE CONFLITOS INTELIGENTE
+    // FISCAL DE CONFLITOS 
     // ==========================================
     function verificarConflitos(horaInicio, horaFim, numeroSalaReal, nomeUsuarioQueEstaTentando) {
         let minInicioNovo = parseInt(horaInicio.split(':')[0])*60 + parseInt(horaInicio.split(':')[1]);
@@ -859,7 +856,7 @@
 
         if (!inicio || !fim) return alert("Preencha o horário de início e fim!");
         
-        if (inicio < pegarHoraAtualString()) return alert("Não é permitido fazer Check-in com início no passado.");
+        if (inicio > pegarHoraAtualString()) return alert("O horário de início não pode ser no futuro. Use a opção Agendar.");
         
         let diffMinutos = calcularDiffMinutos(inicio, fim);
         if (isNaN(diffMinutos) || diffMinutos <= 0) return alert("O horário de fim deve ser depois do início."); 
@@ -901,7 +898,7 @@
         let novoRegistro = { 
             terapeuta: ocupante.terapeuta, especialidade: ocupante.especialidade, 
             sala: salaReal.numero, entrada: ocupante.horaEntrada, saida: Date.now(),
-            horarioTexto: ocupante.horarioTexto,
+            horarioTexto: ocupante.horarioTexto, // Guarda texto exato!
             tempoTotal: tempoMin, pacienteInfo: `${ocupante.paciente} (${ocupante.sindrome})`
         };
         bancoDeDados.ref('clinica/historico_dados').push(novoRegistro);
@@ -910,7 +907,7 @@
     }
 
     // ==========================================
-    // AGENDAMENTO (MODAL)
+    // AGENDAMENTO E TRAVA DE HORA PASSADA
     // ==========================================
     function abrirModalAgendamento(numeroSala) {
         let hoje = pegarDataDeHoje();
@@ -968,7 +965,8 @@
 
     function executarSalvarAgendamento(dados) {
         bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${salaSelecionadaModalAgendamento}`).push(dados).then((ref) => {
-            // AVISO IMEDIATO SE O ADMIN AGENDOU PARA O PROFISSIONAL
+            
+            // ROBÔ 1: AVISA O TERAPEUTA QUE O ADMIN MARCOU ALGO PRA ELE
             if (usuarioAtual === 'admin' && dados.nome !== nomeUsuarioAtual) {
                 let dataFormatada = dataSelecionada.split('-').reverse().join('/');
                 bancoDeDados.ref('clinica/notificacoes').push({
@@ -977,6 +975,20 @@
                     mensagem: `📅 Novo Agendamento: Reservamos a Sala ${salaSelecionadaModalAgendamento} para você no dia ${dataFormatada}, das ${dados.inicio} às ${dados.fim}.`,
                     dataHora: Date.now(), lido: false
                 });
+            }
+
+            // ROBÔ 2: SE O HORÁRIO JÁ FOR AGORA (MENOS DE 5 MINUTOS), APITA NA HORA!
+            if (dataSelecionada === pegarDataDeHoje() && dados.nome === nomeUsuarioAtual) {
+                let diffAgora = calcularDiffMinutos(pegarHoraAtualString(), dados.inicio);
+                if (diffAgora > 0 && diffAgora <= 5) {
+                    mostrarToast(`Atenção: Seu atendimento começa em ${diffAgora} minuto(s)!`, 'notifications_active', '#f59e0b');
+                    bancoDeDados.ref('clinica/notificacoes').push({
+                        remetente: "Sistema Automático", destinatario: dados.nome,
+                        mensagem: `⏰ Lembrete Imediato: Seu atendimento com ${dados.paciente} na Sala ${salaSelecionadaModalAgendamento} começará em ${diffAgora} minuto(s) (às ${dados.inicio}).`,
+                        dataHora: Date.now(), lido: false
+                    });
+                    sessionStorage.setItem(`aviso_5m_${ref.key}`, 'true'); 
+                }
             }
         });
         fecharModalAgendamento();
@@ -991,44 +1003,82 @@
     }
 
     // ==========================================
-    // O NOVO ROBÔ DE 5 MINUTOS INTELIGENTE
+    // ROBÔS DE TEMPO (5 MINUTOS E FIM DE SESSÃO)
     // ==========================================
-    function mostrarToast(mensagem) {
+    function mostrarToast(mensagem, icone = 'notifications_active', cor = '#f59e0b') {
         let toast = document.getElementById('toast-notificacao');
         document.getElementById('toast-mensagem').innerText = mensagem;
+        document.getElementById('toast-icone').innerText = icone;
+        document.getElementById('toast-icone').style.color = cor;
         toast.classList.remove('oculto');
         setTimeout(() => toast.classList.add('oculto'), 8000); 
     }
 
-    function checarNotificacoesAgendamento() {
+    function checarNotificacoesDeTempo() {
         if (!usuarioAtual || dataSelecionada !== pegarDataDeHoje()) return;
         
         let horaAtualStr = pegarHoraAtualString();
+        let agora = new Date();
+        agora.setMinutes(agora.getMinutes() + 5); 
+        let horaDaqui5Min = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
 
         for (let i = 1; i <= NUMERO_DE_SALAS; i++) {
+            
+            // 1. CHECA AGENDAMENTOS (PARA AVISAR DOS 5 MINUTOS)
             let agendamentos = agendaDoDia[`sala_${i}`] || {};
             for (let id in agendamentos) {
                 let ag = agendamentos[id];
                 if (ag.nome === nomeUsuarioAtual) {
-                    
-                    let diffAgora = calcularDiffMinutos(horaAtualStr, ag.inicio);
-                    
-                    // Se faltam de 1 a 5 minutos para a consulta!
-                    if (diffAgora > 0 && diffAgora <= 5) {
+                    // AVISO DE INÍCIO (5 MINUTOS)
+                    if (ag.inicio === horaDaqui5Min) {
                         let key = `aviso_5m_${id}`;
                         if (!sessionStorage.getItem(key)) {
                             sessionStorage.setItem(key, 'true');
-                            mostrarToast(`Atenção: Seu atendimento na Sala ${i} com ${ag.paciente || 'paciente'} começa em ${diffAgora} minuto(s)!`);
-                            
+                            mostrarToast(`Seu atendimento começa em 5 minutos!`, 'notifications_active', '#f59e0b');
                             bancoDeDados.ref('clinica/notificacoes').push({
-                                remetente: "Sistema Automático",
-                                destinatario: nomeUsuarioAtual,
-                                mensagem: `⏰ Lembrete Automático: Seu atendimento com ${ag.paciente || 'paciente'} na Sala ${i} começará em ${diffAgora} minuto(s) (às ${ag.inicio}).`,
+                                remetente: "Sistema Automático", destinatario: nomeUsuarioAtual,
+                                mensagem: `⏰ Lembrete: Seu atendimento com ${ag.paciente || 'paciente'} na Sala ${i} começará em 5 minutos (às ${ag.inicio}).`,
+                                dataHora: Date.now(), lido: false
+                            });
+                        }
+                    }
+                    
+                    // AVISO DE FIM (AGENDAMENTO VIRTUAL ATIVO)
+                    if (ag.fim === horaAtualStr) {
+                        let keyFim = `aviso_fim_ag_${id}`;
+                        if (!sessionStorage.getItem(keyFim)) {
+                            sessionStorage.setItem(keyFim, 'true');
+                            mostrarToast(`Seu tempo na Sala ${i} acabou. Lembre-se de Finalizar!`, 'alarm_off', '#ef4444');
+                            bancoDeDados.ref('clinica/notificacoes').push({
+                                remetente: "Sistema Automático", destinatario: nomeUsuarioAtual,
+                                mensagem: `🔔 Fim do Atendimento: O horário do seu atendimento na Sala ${i} encerrou (${ag.fim}). Por favor, clique em "Finalizar" para liberar a sala.`,
                                 dataHora: Date.now(), lido: false
                             });
                         }
                     }
                 }
+            }
+
+            // 2. CHECA CHECK-INS MANUAIS (PARA AVISAR DO FIM DA SESSÃO)
+            let salaReal = salasEmTempoReal[i-1] || { ocupantes: [] };
+            if (salaReal.ocupantes) {
+                salaReal.ocupantes.forEach((ocupante) => {
+                    if (ocupante.terapeuta === nomeUsuarioAtual && ocupante.horarioTexto) {
+                        let partes = ocupante.horarioTexto.split(' às ');
+                        if (partes.length === 2 && partes[1] === horaAtualStr) {
+                            let keyManFim = `aviso_fim_man_${i}_${partes[1]}`;
+                            if (!sessionStorage.getItem(keyManFim)) {
+                                sessionStorage.setItem(keyManFim, 'true');
+                                mostrarToast(`Seu tempo na Sala ${i} acabou. Lembre-se de Liberar!`, 'alarm_off', '#ef4444');
+                                bancoDeDados.ref('clinica/notificacoes').push({
+                                    remetente: "Sistema Automático", destinatario: nomeUsuarioAtual,
+                                    mensagem: `🔔 Fim do Atendimento: O horário do seu check-in na Sala ${i} encerrou (${partes[1]}). Por favor, clique em "Liberar" para registrar a saída.`,
+                                    dataHora: Date.now(), lido: false
+                                });
+                            }
+                        }
+                    }
+                });
             }
         }
     }
@@ -1036,12 +1086,12 @@
     setInterval(() => { 
         if (usuarioAtual) {
             renderizarSalas(); 
-            checarNotificacoesAgendamento();
+            checarNotificacoesDeTempo();
         }
     }, 60000);
 
     // ==========================================
-    // CONTROLE DE ABAS E MURAL
+    // CONTROLES DE ABAS, RELATÓRIOS E AVISOS 
     // ==========================================
     function mudarAba(aba) {
         document.getElementById('conteudo-salas').classList.add('oculto');
@@ -1062,7 +1112,6 @@
         const termoPesquisa = document.getElementById('pesquisa-equipe').value.toLowerCase();
         const lista = document.getElementById('lista-usuarios-admin');
         lista.innerHTML = '';
-        
         const listaFiltrada = listaUsuariosCadastrados.filter(user => user.nome.toLowerCase().includes(termoPesquisa));
         if (listaFiltrada.length === 0) return lista.innerHTML = '<li class="card-item">Nenhum profissional encontrado.</li>';
 
@@ -1093,7 +1142,6 @@
         renderizarDadosRelatorio();
     }
 
-    // O NOVO LAYOUT DO RELATÓRIO
     function renderizarDadosRelatorio() {
         const filtroNome = document.getElementById('filtro-terapeuta').value;
         const dataInicio = document.getElementById('filtro-data-inicio').value; 
@@ -1119,13 +1167,11 @@
 
         dadosFiltrados.forEach(reg => {
             totalMinutos += reg.tempoTotal;
+            let dataFormatada = new Date(reg.entrada).toLocaleDateString('pt-BR'); 
             
-            let dataObjeto = new Date(reg.entrada);
-            let dataFormatada = dataObjeto.toLocaleDateString('pt-BR'); 
-            let horaEntradaFallback = dataObjeto.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            // NOVIDADE DA AUDITORIA: Mostra o texto exato do horário
+            let horaEntradaFallback = new Date(reg.entrada).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
             let horaSaidaFallback = new Date(reg.saida).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            
-            // Puxa o texto limpo (15:00 às 15:46) que salvamos na gaveta
             let textoHorarioExibicao = reg.horarioTexto ? reg.horarioTexto : `${horaEntradaFallback} às ${horaSaidaFallback}`;
 
             let li = document.createElement('li'); li.className = 'card-item';
