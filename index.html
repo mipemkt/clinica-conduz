@@ -53,6 +53,7 @@
         .caixa-pesquisa input { padding-left: 40px; margin: 0; background-color: #f5f7fa; border: none; border-radius: 10px;}
         .caixa-pesquisa::before { content: 'search'; font-family: 'Material Symbols Outlined'; position: absolute; left: 14px; top: 12px; font-size: 18px; color: #9ca3af;}
 
+        /* GRID RESPONSIVO PARA PC/TABLET */
         .grid-responsivo { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start; }
 
         .sala { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); border-left: 6px solid #d1d5db; position: relative; border-top: 1px solid #f8f9fa; border-right: 1px solid #f8f9fa;}
@@ -301,11 +302,11 @@
             <input type="text" id="modal-sindrome-checkin" placeholder="Ex: TEA, TDAH, etc.">
             <div style="display: flex; gap: 10px;">
                 <div style="width: 50%;">
-                    <label>Início exato:</label>
+                    <label>Início:</label>
                     <input type="time" id="modal-hora-inicio-checkin">
                 </div>
                 <div style="width: 50%;">
-                    <label>Fim (45m padrão):</label>
+                    <label>Fim (estimado):</label>
                     <input type="time" id="modal-hora-fim-checkin">
                 </div>
             </div>
@@ -467,6 +468,7 @@
     }
 
     function tempoEmMinutos(horaStr) {
+        if (!horaStr) return 0;
         let p = horaStr.split(':');
         return parseInt(p[0]) * 60 + parseInt(p[1]);
     }
@@ -628,7 +630,7 @@
 
 
     // ==========================================
-    // MAPA DE SALAS 
+    // MAPA DE SALAS (AUTO CHECK-IN)
     // ==========================================
     function renderizarSalas() {
         const container = document.getElementById('container-salas');
@@ -814,7 +816,7 @@
 
 
     // ==========================================
-    // FISCAL GLOBAL DE CONFLITOS (A FORTALEZA)
+    // FISCAL DE CONFLITOS GLOBAL (A FORTALEZA)
     // ==========================================
     function verificarConflitosGlobais(horaInicio, horaFim, nomeUsuarioQueEstaTentando, salaDesejada) {
         let minInicioNovo = tempoEmMinutos(horaInicio);
@@ -824,9 +826,10 @@
         let conflitosMeusNaSala = [];
         let conflitosMeusEmOutrasSalas = [];
         
+        // Vasculha TODAS as salas da Clínica (de 1 a 10)
         for (let i = 1; i <= NUMERO_DE_SALAS; i++) {
             
-            // Checa a Agenda do Dia
+            // 1. Checa a Agenda do Dia
             let agendamentosDaSala = agendaDoDia[`sala_${i}`] || {};
             for (let id in agendamentosDaSala) {
                 let ag = agendamentosDaSala[id];
@@ -843,7 +846,7 @@
                 }
             }
 
-            // Checa o Check-in em Tempo Real
+            // 2. Checa os Check-ins Ativos Agora
             if (dataSelecionada === pegarDataDeHoje()) {
                 let salaReal = salasEmTempoReal[i - 1] || { ocupantes: [] };
                 if (salaReal.ocupantes) {
@@ -921,6 +924,7 @@
         document.getElementById('modal-paciente-checkin').value = ""; 
         document.getElementById('modal-sindrome-checkin').value = "";
         
+        // AUTO-PREENCHIMENTO
         let horaAgora = pegarHoraAtualString();
         document.getElementById('modal-hora-inicio-checkin').value = horaAgora;
 
@@ -942,11 +946,16 @@
 
         if (!inicio || !fim) return mostrarAlertaAviso("Preencha o horário de início e fim!");
         
-        // TRAVA RETROATIVA ESTRITA (Permite 5 min de atraso só pra dar tempo de digitar o nome da criança)
+        // TRAVA RETROATIVA ESTRITA (Permite 5 min de tolerância para digitação)
         let minInicio = tempoEmMinutos(inicio);
         let minAgora = tempoEmMinutos(pegarHoraAtualString());
-        if (dataSelecionada === pegarDataDeHoje() && minInicio < (minAgora - 5)) {
-            return mostrarAlertaErro("Não é permitido fazer Check-in com horário retroativo (já passado). O sistema registra a hora exata da sua entrada na sala.");
+        if (dataSelecionada === pegarDataDeHoje() && usuarioAtual !== 'admin') {
+            if (minInicio < (minAgora - 5)) {
+                return mostrarAlertaErro("Não é permitido fazer Check-in retroativo. O sistema registra a hora exata da sua entrada. Se esqueceu de registrar antes, peça ao Admin para colocar na agenda.");
+            }
+            if (minInicio > (minAgora + 5)) {
+                return mostrarAlertaErro("Para iniciar no futuro, feche esta tela e use o botão azul '+ Agendar'. O Check-in é exclusivo para entrar na sala AGORA.");
+            }
         }
         
         let diffMinutos = calcularDiffMinutos(inicio, fim);
@@ -955,9 +964,12 @@
         let dadosCheckin = { paciente, sindrome, inicio, fim, diffMinutos };
         let conflitos = verificarConflitosGlobais(inicio, fim, nomeUsuarioAtual, salaSelecionadaModalCheckin + 1);
         
-        // BLOQUEIO SE ESTIVER EM OUTRA SALA NO MESMO HORÁRIO
+        // BLOQUEIO DE ONIPRESENÇA
         if (conflitos.meusEmOutrasSalas.length > 0) {
-            return mostrarAlertaErro(`Você já possui um atendimento na Sala ${conflitos.meusEmOutrasSalas[0].sala} neste mesmo horário (${conflitos.meusEmOutrasSalas[0].inicio} às ${conflitos.meusEmOutrasSalas[0].fim}). Não é possível ocupar duas salas ao mesmo tempo!`);
+            let salaOcupada = conflitos.meusEmOutrasSalas[0].sala;
+            let iniOcupado = conflitos.meusEmOutrasSalas[0].inicio;
+            let fimOcupado = conflitos.meusEmOutrasSalas[0].fim;
+            return mostrarAlertaErro(`Atenção: Você já possui um atendimento na Sala ${salaOcupada} neste mesmo horário (${iniOcupado} às ${fimOcupado}). Não é possível ocupar duas salas simultaneamente!`);
         }
 
         if (conflitos.meusNaSala.length > 0) {
@@ -1052,7 +1064,7 @@
             let minInicio = tempoEmMinutos(inicio);
             let minAgora = tempoEmMinutos(pegarHoraAtualString());
             if (minInicio < (minAgora - 5)) {
-                return mostrarAlertaErro("Não é permitido agendar em horários que já passaram hoje. Utilize o botão de Check-in para entrar na sala agora.");
+                return mostrarAlertaErro("Não é permitido agendar em horários que já passaram. Se for entrar agora, use o botão verde de Check-in.");
             }
         }
 
@@ -1062,9 +1074,12 @@
         let dadosAgendamento = { nome, inicio, fim, paciente, sindrome };
         let conflitos = verificarConflitosGlobais(inicio, fim, nome, salaSelecionadaModalAgendamento);
         
-        // BLOQUEIO SE ESTIVER EM OUTRA SALA NO MESMO HORÁRIO
+        // BLOQUEIO DE ONIPRESENÇA NA AGENDA
         if (conflitos.meusEmOutrasSalas.length > 0) {
-            return mostrarAlertaErro(`O profissional ${nome} já possui um atendimento na Sala ${conflitos.meusEmOutrasSalas[0].sala} neste mesmo horário (${conflitos.meusEmOutrasSalas[0].inicio} às ${conflitos.meusEmOutrasSalas[0].fim}). Não é possível ocupar duas salas ao mesmo tempo.`);
+            let salaOcupada = conflitos.meusEmOutrasSalas[0].sala;
+            let iniOcupado = conflitos.meusEmOutrasSalas[0].inicio;
+            let fimOcupado = conflitos.meusEmOutrasSalas[0].fim;
+            return mostrarAlertaErro(`Atenção: O profissional ${nome} já possui um atendimento na Sala ${salaOcupada} neste mesmo horário (${iniOcupado} às ${fimOcupado}). Não é possível agendar em duas salas simultaneamente!`);
         }
 
         if (conflitos.meusNaSala.length > 0) {
