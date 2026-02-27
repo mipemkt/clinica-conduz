@@ -15,21 +15,21 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
-        /* --- ESTILOS VISUAIS PREMIUM --- */
+        /* --- ESTILOS VISUAIS PREMIUM & RESPONSIVOS --- */
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; margin: 0; color: #333; }
         .oculto { display: none !important; }
         
         .material-symbols-outlined { vertical-align: middle; font-size: 18px; margin-right: 4px; }
         .icon-sm { font-size: 15px; margin-right: 3px; color: #6b7280; }
 
-        #app-container { max-width: 414px; margin: 0 auto; background-color: #fafbfc; min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.08); padding-bottom: 80px; }
+        #app-container { max-width: 1200px; margin: 0 auto; background-color: #fafbfc; min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.08); padding-bottom: 80px; }
         
         .header { background: linear-gradient(135deg, #0052d4 0%, #4364f7 50%, #6fb1fc 100%); color: white; padding: 25px 20px; text-align: center; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 15px rgba(67, 100, 247, 0.3); margin-bottom: 20px;}
         .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
         .header p { margin: 5px 0 0 0; font-size: 13px; font-weight: 400; opacity: 0.9; }
         
         #tela-login { padding: 40px 20px; text-align: center; }
-        .card-login { background: white; padding: 35px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .card-login { background: white; padding: 35px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; }
         
         input, select, textarea { width: 100%; padding: 12px 15px; margin: 8px 0; border: 1.5px solid #e1e4e8; border-radius: 12px; box-sizing: border-box; font-size: 14px; font-family: 'Inter', sans-serif; transition: border-color 0.3s; background-color: #fcfcfc;}
         input:focus, select:focus, textarea:focus { border-color: #4364f7; outline: none; background-color: #fff;}
@@ -44,13 +44,17 @@
         
         .conteudo { padding: 0 20px 20px 20px; }
         
-        .barra-data { background: white; padding: 18px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-bottom: 25px; text-align: center; border: 1px solid #f0f0f0;}
+        .barra-data, .painel-filtros, .form-admin-add { background: white; padding: 18px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-bottom: 25px; border: 1px solid #f0f0f0; max-width: 700px; margin-left: auto; margin-right: auto;}
+        .barra-data { text-align: center; }
+        .form-admin-add { background: #f8fafc; border: 1px solid #e2e8f0; }
+
         .barra-data input[type="date"] { font-size: 16px; font-weight: 600; color: #222; text-align: center; border: 2px solid #e1e4e8; padding: 12px; background: #fff; margin-bottom: 12px; border-radius: 10px;}
         .caixa-pesquisa { position: relative; margin-bottom: 5px; }
         .caixa-pesquisa input { padding-left: 40px; margin: 0; background-color: #f5f7fa; border: none; border-radius: 10px;}
         .caixa-pesquisa::before { content: 'search'; font-family: 'Material Symbols Outlined'; position: absolute; left: 14px; top: 12px; font-size: 18px; color: #9ca3af;}
 
-        .grid-salas { display: flex; flex-direction: column; gap: 20px; }
+        .grid-responsivo { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start; }
+
         .sala { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); border-left: 6px solid #d1d5db; position: relative; border-top: 1px solid #f8f9fa; border-right: 1px solid #f8f9fa;}
         .sala.minha-sala { border-left: 6px solid #10b981; background-color: #f6fdf9; border-top: 1px solid #e2f5ea; border-right: 1px solid #e2f5ea;}
         .sala-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 15px; }
@@ -68,13 +72,13 @@
 
         /* MODAIS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;}
+        .modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;}
         .modal-box h3 { margin-top: 0; color: #1f2937; font-weight: 700; font-size: 18px;}
         .modal-box label { font-size: 12px; font-weight: 600; color: #6b7280; display: block; margin-top: 12px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* MODAL DE ALERTAS/CONFIRMAÇÕES (O NOVO!) */
+        /* MODAL DE ALERTAS PREMIUM */
         #modal-alerta-generico { z-index: 9999; }
-        .alerta-generico-box { text-align: center; padding: 30px 20px; }
+        .alerta-generico-box { text-align: center; padding: 30px 20px; max-width: 340px;}
         .alerta-icone-container { display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; }
         .alerta-texto { font-size: 15px; color: #4b5563; line-height: 1.5; margin-bottom: 20px; }
 
@@ -83,7 +87,8 @@
         .alerta-titulo { color: #b45309 !important; display: flex; align-items: center; gap: 8px;}
         .lista-conflitos { background: #fef3c7; padding: 12px 12px 12px 30px; border-radius: 8px; font-size: 13px; color: #b45309; margin: 15px 0;}
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 414px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 0 15px 0; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); left: 50%; transform: translateX(-50%); z-index: 100; border-top: 1px solid #f0f0f0;}
+        /* MENU INFERIOR ALARGADO PARA DESKTOP */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 1200px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 0 15px 0; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); left: 50%; transform: translateX(-50%); z-index: 100; border-top: 1px solid #f0f0f0;}
         .nav-item { position: relative; flex: 1; background: none; border: none; color: #9ca3af; font-size: 11px; display: flex; flex-direction: column; align-items: center; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif;}
         .nav-item.ativo { color: #2563eb; font-weight: 700; }
         .nav-icon { font-size: 22px; margin-bottom: 4px; transition: transform 0.2s;}
@@ -91,20 +96,22 @@
         .badge-notif { position: absolute; top: 0px; right: calc(50% - 22px); background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); pointer-events: none;}
         
         ul { list-style: none; padding: 0; margin: 0; }
-        li.card-item { background: white; padding: 18px; margin-bottom: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-size: 14px; border-left: 5px solid #3b82f6;}
+        li.card-item, .bloco-notificacao { margin-bottom: 0 !important; background: white; padding: 18px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-size: 14px; }
+        li.card-item { border-left: 5px solid #3b82f6; }
+        .bloco-notificacao { position: relative; border-top: 4px solid #f59e0b; }
         
-        .form-admin-add { background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
         .aviso-dia-diferente { background: #f3f4f6; color: #6b7280; font-size: 13px; text-align: center; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-weight: 500;}
         
         .painel-resumo { background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; padding: 15px; border-radius: 16px; font-weight: 700; text-align: center; margin-bottom: 20px; border: 1px solid #bfdbfe; font-size: 15px;}
         .tag-data { background: #f1f5f9; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #475569; }
         .linha-detalhe { font-size: 13px; color: #4b5563; line-height: 1.6; margin-top: 10px; }
         
-        .bloco-notificacao { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; border-top: 4px solid #f59e0b;}
         .notif-data { font-size: 11px; color: #9ca3af; margin-bottom: 8px; display: block; font-weight: 500;}
         .notif-msg { color: #1f2937; font-size: 14px; line-height: 1.5;}
         .notif-remetente { font-size: 12px; color: #2563eb; font-weight: 700; margin-top: 12px; display: block;}
         .btn-acao-notif { background: #f3f4f6; border: none; font-size: 12px; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-weight: 600; color: #4b5563;}
+
+        .titulo-secao { font-size: 18px; color: #1f2937; margin-bottom: 15px; max-width: 700px; margin-left: auto; margin-right: auto; display: flex; justify-content: space-between; align-items: center;}
     </style>
 </head>
 <body>
@@ -140,18 +147,18 @@
                     <input type="text" id="pesquisa-sala" placeholder="Procurar sala ou profissional..." oninput="renderizarSalas()">
                 </div>
             </div>
-            <div class="grid-salas" id="container-salas"></div>
+            <div class="grid-responsivo" id="container-salas"></div>
         </div>
         
         <div id="conteudo-relatorios" class="conteudo oculto">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 20px; color: #1f2937; margin: 0;">Auditoria</h2>
+            <div class="titulo-secao">
+                <h2 style="margin:0; font-size: 20px;">Auditoria</h2>
                 <button class="btn-primario btn-perigo" style="width: auto; padding: 8px 12px; font-size: 12px; margin-top: 0;" onclick="confirmarZerarBase()">
                     <span class="material-symbols-outlined" style="font-size:14px">delete_sweep</span> Limpar
                 </button>
             </div>
             
-            <div style="background: white; padding: 18px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+            <div class="painel-filtros" style="background: white;">
                 <label style="font-size: 12px; font-weight: bold; color: #6b7280;">Filtrar Profissional:</label>
                 <select id="filtro-terapeuta" onchange="renderizarDadosRelatorio()"></select>
                 
@@ -167,8 +174,8 @@
                 </div>
             </div>
 
-            <div id="resumo-relatorio" class="painel-resumo">Calculando...</div>
-            <ul id="lista-relatorios"></ul>
+            <div id="resumo-relatorio" class="painel-resumo" style="max-width: 670px; margin-left:auto; margin-right:auto;">Calculando...</div>
+            <ul id="lista-relatorios" class="grid-responsivo"></ul>
         </div>
 
         <div id="conteudo-usuarios" class="conteudo oculto">
@@ -192,11 +199,13 @@
                 <button class="btn-primario btn-sucesso" onclick="adminCriarUsuario()">Cadastrar na Equipe</button>
             </div>
             
-            <h2 style="font-size: 18px; color: #1f2937; margin-bottom: 10px;">Equipe Ativa</h2>
-            <div class="caixa-pesquisa">
+            <div class="titulo-secao">
+                <h2 style="margin:0; font-size: 18px;">Equipe Ativa</h2>
+            </div>
+            <div class="caixa-pesquisa" style="max-width: 700px; margin: 0 auto 15px auto;">
                 <input type="text" id="pesquisa-equipe" placeholder="Buscar por nome..." oninput="renderizarAbaUsuarios()">
             </div>
-            <ul id="lista-usuarios-admin"></ul>
+            <ul id="lista-usuarios-admin" class="grid-responsivo"></ul>
         </div>
 
         <div id="conteudo-notificacoes" class="conteudo oculto">
@@ -215,13 +224,13 @@
                 </button>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 18px; color: #1f2937; margin: 0;">Avisos Recentes</h2>
+            <div class="titulo-secao">
+                <h2 style="margin:0; font-size: 18px;">Avisos Recentes</h2>
                 <button id="btn-limpar-avisos" class="btn-primario btn-perigo oculto" style="width: auto; padding: 6px 12px; font-size: 11px; margin-top: 0; box-shadow: none;" onclick="confirmarLimparAvisosModal()">
                     <span class="material-symbols-outlined" style="font-size:14px">delete</span> Limpar Tudo
                 </button>
             </div>
-            <div id="lista-notificacoes"></div>
+            <div id="lista-notificacoes" class="grid-responsivo"></div>
         </div>
 
         <div class="bottom-nav">
@@ -247,7 +256,7 @@
     </div>
 
     <div id="modal-overlay-agenda-sala" class="modal-overlay oculto">
-        <div class="modal-box" style="padding: 20px; width: 90%; max-width: 400px;">
+        <div class="modal-box" style="padding: 20px; width: 90%; max-width: 450px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
                 <h3 style="margin:0; display:flex; align-items:center;"><span class="material-symbols-outlined" style="color:#007BFF; font-size:24px;">event_note</span> Agenda Sala <span id="modal-agenda-num"></span></h3>
                 <button style="background:none; border:none; font-size:24px; cursor:pointer; color:#9ca3af; padding:0;" onclick="fecharModalAgendaSala()"><span class="material-symbols-outlined">close</span></button>
@@ -274,7 +283,7 @@
                     <input type="time" id="modal-hora-inicio-agendamento">
                 </div>
                 <div style="width: 50%;">
-                    <label>Fim (ex: 15:50):</label>
+                    <label>Fim (ex: 15:45):</label>
                     <input type="time" id="modal-hora-fim-agendamento">
                 </div>
             </div>
@@ -292,11 +301,11 @@
             <input type="text" id="modal-sindrome-checkin" placeholder="Ex: TEA, TDAH, etc.">
             <div style="display: flex; gap: 10px;">
                 <div style="width: 50%;">
-                    <label>Início:</label>
+                    <label>Início exato:</label>
                     <input type="time" id="modal-hora-inicio-checkin">
                 </div>
                 <div style="width: 50%;">
-                    <label>Fim (estimado):</label>
+                    <label>Fim (45m padrão):</label>
                     <input type="time" id="modal-hora-fim-checkin">
                 </div>
             </div>
@@ -307,9 +316,9 @@
 
     <div id="modal-overlay-conflito" class="modal-overlay oculto">
         <div class="modal-box alerta-caixa">
-            <h3 class="alerta-titulo"><span class="material-symbols-outlined">warning</span> Conflito Detectado</h3>
+            <h3 class="alerta-titulo"><span class="material-symbols-outlined">warning</span> Conflito de Sala</h3>
             <p style="font-size: 13px; color: #4b5563; line-height: 1.5; margin-top: 5px;">
-                O horário escolhido cruza com os seguintes agendamentos ou check-ins nesta sala:
+                A sala já está ocupada ou reservada pelos seguintes profissionais neste horário:
             </p>
             <ul id="lista-conflitos-alerta" class="lista-conflitos"></ul>
             <p style="font-size: 13px; font-weight: 700; color: #1f2937; text-align: center; margin-top: 20px;">Deseja confirmar mesmo assim?</p>
@@ -391,7 +400,7 @@
     let salaAtualModalAgenda = 0;
 
     // ==========================================
-    // SISTEMA DE ALERTAS PREMIUM (O NOVO CÉREBRO VISUAL)
+    // SISTEMA DE ALERTAS PREMIUM
     // ==========================================
     let acaoConfirmacaoPendente = null;
 
@@ -402,7 +411,6 @@
         document.getElementById('alerta-generico-icone-bg').style.backgroundColor = "#eff6ff";
         document.getElementById('alerta-generico-icone').style.color = "#3b82f6";
         document.getElementById('btn-alerta-ok').style.background = "linear-gradient(135deg, #007bff, #0056b3)";
-        
         document.getElementById('alerta-botoes-simples').classList.remove('oculto');
         document.getElementById('alerta-botoes-confirmacao').classList.add('oculto');
         document.getElementById('modal-alerta-generico').classList.remove('oculto');
@@ -415,7 +423,6 @@
         document.getElementById('alerta-generico-icone-bg').style.backgroundColor = "#fef2f2";
         document.getElementById('alerta-generico-icone').style.color = "#ef4444";
         document.getElementById('btn-alerta-ok').style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
-        
         document.getElementById('alerta-botoes-simples').classList.remove('oculto');
         document.getElementById('alerta-botoes-confirmacao').classList.add('oculto');
         document.getElementById('modal-alerta-generico').classList.remove('oculto');
@@ -427,12 +434,9 @@
         document.getElementById('alerta-generico-icone').innerText = "help";
         document.getElementById('alerta-generico-icone-bg').style.backgroundColor = "#fef3c7";
         document.getElementById('alerta-generico-icone').style.color = "#f59e0b";
-        
         document.getElementById('btn-alerta-sim').innerText = textoBotaoSim;
         document.getElementById('btn-alerta-sim').style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
-        
         acaoConfirmacaoPendente = funcaoAcaoSim;
-
         document.getElementById('alerta-botoes-simples').classList.add('oculto');
         document.getElementById('alerta-botoes-confirmacao').classList.remove('oculto');
         document.getElementById('modal-alerta-generico').classList.remove('oculto');
@@ -448,9 +452,8 @@
         fecharAlertaGenerico();
     }
 
-
     // ==========================================
-    // FUNÇÕES DE TEMPO BÁSICAS
+    // FUNÇÕES DE TEMPO BÁSICAS E CONVERSÃO
     // ==========================================
     function pegarDataDeHoje() {
         const hoje = new Date();
@@ -463,11 +466,13 @@
         return agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
     }
 
+    function tempoEmMinutos(horaStr) {
+        let p = horaStr.split(':');
+        return parseInt(p[0]) * 60 + parseInt(p[1]);
+    }
+
     function calcularDiffMinutos(inicio, fim) {
-        let t1 = inicio.split(':'); let t2 = fim.split(':');
-        let minInicio = parseInt(t1[0])*60 + parseInt(t1[1]);
-        let minFim = parseInt(t2[0])*60 + parseInt(t2[1]);
-        return minFim - minInicio;
+        return tempoEmMinutos(fim) - tempoEmMinutos(inicio);
     }
 
     // ==========================================
@@ -623,7 +628,7 @@
 
 
     // ==========================================
-    // MAPA DE SALAS (AUTO CHECK-IN)
+    // MAPA DE SALAS 
     // ==========================================
     function renderizarSalas() {
         const container = document.getElementById('container-salas');
@@ -743,7 +748,7 @@
     }
 
     function confirmarConcluirAtendimentoAgendado(numSala, idAgenda, terapeuta, paciente, sindrome, tempoTotal, inicio, fim) {
-        mostrarConfirmacao("Finalizar este atendimento e enviar para a Auditoria?", "Finalizar", () => {
+        mostrarConfirmacao("Finalizar este atendimento e enviá-lo para a Auditoria?", "Finalizar Atendimento", () => {
             let novoRegistro = { 
                 terapeuta: terapeuta, especialidade: especialidadeAtual, sala: numSala, 
                 entrada: Date.now(), saida: Date.now(), tempoTotal: tempoTotal, 
@@ -809,52 +814,67 @@
 
 
     // ==========================================
-    // FISCAL DE CONFLITOS 
+    // FISCAL GLOBAL DE CONFLITOS (A FORTALEZA)
     // ==========================================
-    function verificarConflitos(horaInicio, horaFim, numeroSalaReal, nomeUsuarioQueEstaTentando) {
-        let minInicioNovo = parseInt(horaInicio.split(':')[0])*60 + parseInt(horaInicio.split(':')[1]);
-        let minFimNovo = parseInt(horaFim.split(':')[0])*60 + parseInt(horaFim.split(':')[1]);
+    function verificarConflitosGlobais(horaInicio, horaFim, nomeUsuarioQueEstaTentando, salaDesejada) {
+        let minInicioNovo = tempoEmMinutos(horaInicio);
+        let minFimNovo = tempoEmMinutos(horaFim);
         
-        let conflitosDeOutros = [];
-        let conflitosDeMimMesmo = [];
+        let conflitosDeOutrosNaSala = [];
+        let conflitosMeusNaSala = [];
+        let conflitosMeusEmOutrasSalas = [];
         
-        let agendamentosDaSala = agendaDoDia[`sala_${numeroSalaReal}`] || {};
-        for (let id in agendamentosDaSala) {
-            let ag = agendamentosDaSala[id];
-            let minInicioAg = parseInt(ag.inicio.split(':')[0])*60 + parseInt(ag.inicio.split(':')[1]);
-            let minFimAg = parseInt(ag.fim.split(':')[0])*60 + parseInt(ag.fim.split(':')[1]);
+        for (let i = 1; i <= NUMERO_DE_SALAS; i++) {
+            
+            // Checa a Agenda do Dia
+            let agendamentosDaSala = agendaDoDia[`sala_${i}`] || {};
+            for (let id in agendamentosDaSala) {
+                let ag = agendamentosDaSala[id];
+                let minInicioAg = tempoEmMinutos(ag.inicio);
+                let minFimAg = tempoEmMinutos(ag.fim);
 
-            if (minInicioNovo < minFimAg && minFimNovo > minInicioAg) {
-                if (ag.nome === nomeUsuarioQueEstaTentando) conflitosDeMimMesmo.push(ag);
-                else conflitosDeOutros.push({ nome: ag.nome, inicio: ag.inicio, fim: ag.fim });
+                if (minInicioNovo < minFimAg && minFimNovo > minInicioAg) {
+                    if (i === salaDesejada) {
+                        if (ag.nome === nomeUsuarioQueEstaTentando) conflitosMeusNaSala.push(ag);
+                        else conflitosDeOutrosNaSala.push({ nome: ag.nome, inicio: ag.inicio, fim: ag.fim });
+                    } else {
+                        if (ag.nome === nomeUsuarioQueEstaTentando) conflitosMeusEmOutrasSalas.push({ sala: i, inicio: ag.inicio, fim: ag.fim });
+                    }
+                }
             }
-        }
 
-        if (dataSelecionada === pegarDataDeHoje()) {
-            let salaReal = salasEmTempoReal[numeroSalaReal - 1] || { ocupantes: [] };
-            if (salaReal.ocupantes) {
-                salaReal.ocupantes.forEach(ocupante => {
-                    if (ocupante.horarioTexto) {
-                        let partes = ocupante.horarioTexto.split(' às ');
-                        if (partes.length === 2) {
-                            let minInicioReal = parseInt(partes[0].split(':')[0])*60 + parseInt(partes[0].split(':')[1]);
-                            let minFimReal = parseInt(partes[1].split(':')[0])*60 + parseInt(partes[1].split(':')[1]);
+            // Checa o Check-in em Tempo Real
+            if (dataSelecionada === pegarDataDeHoje()) {
+                let salaReal = salasEmTempoReal[i - 1] || { ocupantes: [] };
+                if (salaReal.ocupantes) {
+                    salaReal.ocupantes.forEach(ocupante => {
+                        if (ocupante.horarioTexto) {
+                            let partes = ocupante.horarioTexto.split(' às ');
+                            if (partes.length === 2) {
+                                let minInicioReal = tempoEmMinutos(partes[0]);
+                                let minFimReal = tempoEmMinutos(partes[1]);
 
-                            if (minInicioNovo < minFimReal && minFimNovo > minInicioReal) {
-                                if (ocupante.terapeuta === nomeUsuarioQueEstaTentando) {
-                                    let jaListado = conflitosDeMimMesmo.find(s => s.inicio === partes[0]);
-                                    if(!jaListado) conflitosDeMimMesmo.push({ nome: ocupante.terapeuta, inicio: partes[0], fim: partes[1] });
-                                } else {
-                                    let jaListado = conflitosDeOutros.find(s => s.nome === ocupante.terapeuta);
-                                    if(!jaListado) conflitosDeOutros.push({ nome: ocupante.terapeuta, inicio: partes[0], fim: partes[1] });
+                                if (minInicioNovo < minFimReal && minFimNovo > minInicioReal) {
+                                    if (i === salaDesejada) {
+                                        if (ocupante.terapeuta === nomeUsuarioQueEstaTentando) {
+                                            if(!conflitosMeusNaSala.find(s => s.inicio === partes[0])) conflitosMeusNaSala.push({ nome: ocupante.terapeuta, inicio: partes[0], fim: partes[1] });
+                                        } else {
+                                            if(!conflitosDeOutrosNaSala.find(s => s.nome === ocupante.terapeuta)) conflitosDeOutrosNaSala.push({ nome: ocupante.terapeuta, inicio: partes[0], fim: partes[1] });
+                                        }
+                                    } else {
+                                        if (ocupante.terapeuta === nomeUsuarioQueEstaTentando) {
+                                             if(!conflitosMeusEmOutrasSalas.find(s => s.sala === i)) conflitosMeusEmOutrasSalas.push({ sala: i, inicio: partes[0], fim: partes[1] });
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
-        return { outros: conflitosDeOutros, mim: conflitosDeMimMesmo };
+        
+        return { outrosNaSala: conflitosDeOutrosNaSala, meusNaSala: conflitosMeusNaSala, meusEmOutrasSalas: conflitosMeusEmOutrasSalas };
     }
 
     function abrirModalAlertaConflito(sobreposicoes) {
@@ -890,28 +910,22 @@
     }
 
     // ==========================================
-    // CHECK-IN MANUAL (AUTO-PREENCHIMENTO INTELIGENTE)
+    // CHECK-IN MANUAL COM AUTO PREENCHIMENTO E TRAVA RETROATIVA
     // ==========================================
     function abrirModalCheckin(indexSala) {
         salaSelecionadaModalCheckin = indexSala;
         let salaReal = salasEmTempoReal[indexSala];
         if (!salaReal.ocupantes) salaReal.ocupantes = [];
 
-        let jaOcupando = false;
-        salasEmTempoReal.forEach(s => { if(s.ocupantes && s.ocupantes.some(o => o.terapeuta === nomeUsuarioAtual)) jaOcupando = true; });
-        if (jaOcupando) return mostrarAlertaErro("Você já está em uma sala. Libere a sala atual antes de entrar em outra!");
-
         document.getElementById('modal-sala-num-checkin').innerText = (indexSala + 1);
         document.getElementById('modal-paciente-checkin').value = ""; 
         document.getElementById('modal-sindrome-checkin').value = "";
         
-        // AUTO-PREENCHIMENTO DE HORA
         let horaAgora = pegarHoraAtualString();
         document.getElementById('modal-hora-inicio-checkin').value = horaAgora;
 
-        // BÔNUS: Adiciona 50 minutos por padrão no fim
         let agoraDate = new Date();
-        agoraDate.setMinutes(agoraDate.getMinutes() + 50);
+        agoraDate.setMinutes(agoraDate.getMinutes() + 45); // SOMA 45 MINUTOS PADRÃO
         let horaFimEstimada = agoraDate.getHours().toString().padStart(2, '0') + ':' + agoraDate.getMinutes().toString().padStart(2, '0');
         document.getElementById('modal-hora-fim-checkin').value = horaFimEstimada;
 
@@ -928,17 +942,29 @@
 
         if (!inicio || !fim) return mostrarAlertaAviso("Preencha o horário de início e fim!");
         
+        // TRAVA RETROATIVA ESTRITA (Permite 5 min de atraso só pra dar tempo de digitar o nome da criança)
+        let minInicio = tempoEmMinutos(inicio);
+        let minAgora = tempoEmMinutos(pegarHoraAtualString());
+        if (dataSelecionada === pegarDataDeHoje() && minInicio < (minAgora - 5)) {
+            return mostrarAlertaErro("Não é permitido fazer Check-in com horário retroativo (já passado). O sistema registra a hora exata da sua entrada na sala.");
+        }
+        
         let diffMinutos = calcularDiffMinutos(inicio, fim);
         if (isNaN(diffMinutos) || diffMinutos <= 0) return mostrarAlertaErro("O horário de término deve ser depois do início."); 
 
         let dadosCheckin = { paciente, sindrome, inicio, fim, diffMinutos };
-        let conflitos = verificarConflitos(inicio, fim, salaSelecionadaModalCheckin + 1, nomeUsuarioAtual);
+        let conflitos = verificarConflitosGlobais(inicio, fim, nomeUsuarioAtual, salaSelecionadaModalCheckin + 1);
         
-        if (conflitos.mim.length > 0) {
-            mostrarConfirmacao("Você já possui um registro neste horário. Deseja adicionar outro paciente junto?", "Sim, adicionar", () => {
-                if (conflitos.outros.length > 0) {
-                    operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
-                    abrirModalAlertaConflito(conflitos.outros);
+        // BLOQUEIO SE ESTIVER EM OUTRA SALA NO MESMO HORÁRIO
+        if (conflitos.meusEmOutrasSalas.length > 0) {
+            return mostrarAlertaErro(`Você já possui um atendimento na Sala ${conflitos.meusEmOutrasSalas[0].sala} neste mesmo horário (${conflitos.meusEmOutrasSalas[0].inicio} às ${conflitos.meusEmOutrasSalas[0].fim}). Não é possível ocupar duas salas ao mesmo tempo!`);
+        }
+
+        if (conflitos.meusNaSala.length > 0) {
+            mostrarConfirmacao("Você já possui um registro nesta mesma sala neste horário. Deseja adicionar outro paciente junto (Ex: Grupo)?", "Sim, adicionar", () => {
+                if (conflitos.outrosNaSala.length > 0) {
+                    operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outrosNaSala, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
+                    abrirModalAlertaConflito(conflitos.outrosNaSala);
                 } else {
                     executarSalvarCheckin(dadosCheckin);
                 }
@@ -946,9 +972,9 @@
             return;
         }
 
-        if (conflitos.outros.length > 0) {
-            operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
-            abrirModalAlertaConflito(conflitos.outros);
+        if (conflitos.outrosNaSala.length > 0) {
+            operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outrosNaSala, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
+            abrirModalAlertaConflito(conflitos.outrosNaSala);
             return; 
         }
 
@@ -990,7 +1016,7 @@
     }
 
     // ==========================================
-    // AGENDAMENTO (MODAL)
+    // AGENDAMENTO (MODAL E BLOQUEIO DE ONIPRESENÇA)
     // ==========================================
     function abrirModalAgendamento(numeroSala) {
         let hoje = pegarDataDeHoje();
@@ -1023,8 +1049,10 @@
         if (!nome || !inicio || !fim) return mostrarAlertaAviso("Preencha profissional e horários!");
         
         if (dataSelecionada === pegarDataDeHoje() && usuarioAtual !== 'admin') {
-            if (inicio < pegarHoraAtualString()) {
-                return mostrarAlertaErro("Não é permitido agendar em horários que já passaram. Use o Check-in.");
+            let minInicio = tempoEmMinutos(inicio);
+            let minAgora = tempoEmMinutos(pegarHoraAtualString());
+            if (minInicio < (minAgora - 5)) {
+                return mostrarAlertaErro("Não é permitido agendar em horários que já passaram hoje. Utilize o botão de Check-in para entrar na sala agora.");
             }
         }
 
@@ -1032,13 +1060,18 @@
         if (isNaN(diffMinutos) || diffMinutos <= 0) return mostrarAlertaErro("O término deve ser maior que o início.");
 
         let dadosAgendamento = { nome, inicio, fim, paciente, sindrome };
-        let conflitos = verificarConflitos(inicio, fim, salaSelecionadaModalAgendamento, nome);
+        let conflitos = verificarConflitosGlobais(inicio, fim, nome, salaSelecionadaModalAgendamento);
         
-        if (conflitos.mim.length > 0) {
-            mostrarConfirmacao("Você já possui um agendamento neste horário. Deseja registrar outro paciente junto?", "Sim, agendar", () => {
-                if (conflitos.outros.length > 0) {
-                    operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
-                    abrirModalAlertaConflito(conflitos.outros);
+        // BLOQUEIO SE ESTIVER EM OUTRA SALA NO MESMO HORÁRIO
+        if (conflitos.meusEmOutrasSalas.length > 0) {
+            return mostrarAlertaErro(`O profissional ${nome} já possui um atendimento na Sala ${conflitos.meusEmOutrasSalas[0].sala} neste mesmo horário (${conflitos.meusEmOutrasSalas[0].inicio} às ${conflitos.meusEmOutrasSalas[0].fim}). Não é possível ocupar duas salas ao mesmo tempo.`);
+        }
+
+        if (conflitos.meusNaSala.length > 0) {
+            mostrarConfirmacao("Você já possui um agendamento nesta sala neste horário. Deseja registrar outro paciente junto (Ex: Grupo)?", "Sim, agendar", () => {
+                if (conflitos.outrosNaSala.length > 0) {
+                    operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outrosNaSala, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
+                    abrirModalAlertaConflito(conflitos.outrosNaSala);
                 } else {
                     executarSalvarAgendamento(dadosAgendamento);
                 }
@@ -1046,9 +1079,9 @@
             return;
         }
 
-        if (conflitos.outros.length > 0) {
-            operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
-            abrirModalAlertaConflito(conflitos.outros);
+        if (conflitos.outrosNaSala.length > 0) {
+            operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outrosNaSala, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
+            abrirModalAlertaConflito(conflitos.outrosNaSala);
             return;
         }
         executarSalvarAgendamento(dadosAgendamento);
@@ -1112,7 +1145,6 @@
 
         for (let i = 1; i <= NUMERO_DE_SALAS; i++) {
             
-            // 1. CHECA AGENDAMENTOS (PARA AVISAR DOS 5 MINUTOS)
             let agendamentos = agendaDoDia[`sala_${i}`] || {};
             for (let id in agendamentos) {
                 let ag = agendamentos[id];
@@ -1144,7 +1176,6 @@
                 }
             }
 
-            // 2. CHECA CHECK-INS MANUAIS (PARA AVISAR DO FIM DA SESSÃO)
             let salaReal = salasEmTempoReal[i-1] || { ocupantes: [] };
             if (salaReal.ocupantes) {
                 salaReal.ocupantes.forEach((ocupante) => {
