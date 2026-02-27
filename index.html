@@ -37,8 +37,10 @@
         button { font-family: 'Inter', sans-serif; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-primario { padding: 14px; background: linear-gradient(135deg, #007bff, #0056b3); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600; width: 100%; margin-top: 15px; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); }
         .btn-primario:active { transform: translateY(2px); box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25); }
-        .btn-perigo { background: linear-gradient(135deg, #dc3545, #b02a37); box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25); }
+        .btn-perigo { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
         .btn-sucesso { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+        .btn-secundario { background: #f1f5f9; color: #475569; border: none; box-shadow: none;}
+        .btn-secundario:hover { background: #e2e8f0; }
         
         .conteudo { padding: 0 20px 20px 20px; }
         
@@ -64,12 +66,19 @@
         .bloco-paciente strong { color: #b45309; font-size: 14px;}
         .btn-liberar { background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-weight: 600;}
 
+        /* MODAIS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;}
         .modal-box h3 { margin-top: 0; color: #1f2937; font-weight: 700; font-size: 18px;}
         .modal-box label { font-size: 12px; font-weight: 600; color: #6b7280; display: block; margin-top: 12px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
 
-        #modal-overlay-alerta, #modal-overlay-limpar-avisos { z-index: 1100; }
+        /* MODAL DE ALERTAS/CONFIRMAÇÕES (O NOVO!) */
+        #modal-alerta-generico { z-index: 9999; }
+        .alerta-generico-box { text-align: center; padding: 30px 20px; }
+        .alerta-icone-container { display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; }
+        .alerta-texto { font-size: 15px; color: #4b5563; line-height: 1.5; margin-bottom: 20px; }
+
+        #modal-overlay-conflito { z-index: 1100; }
         .alerta-caixa { border-top: 6px solid #f59e0b; }
         .alerta-titulo { color: #b45309 !important; display: flex; align-items: center; gap: 8px;}
         .lista-conflitos { background: #fef3c7; padding: 12px 12px 12px 30px; border-radius: 8px; font-size: 13px; color: #b45309; margin: 15px 0;}
@@ -79,7 +88,6 @@
         .nav-item.ativo { color: #2563eb; font-weight: 700; }
         .nav-icon { font-size: 22px; margin-bottom: 4px; transition: transform 0.2s;}
         
-        /* A BOLINHA DE NOTIFICAÇÃO (BADGE) */
         .badge-notif { position: absolute; top: 0px; right: calc(50% - 22px); background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); pointer-events: none;}
         
         ul { list-style: none; padding: 0; margin: 0; }
@@ -138,7 +146,7 @@
         <div id="conteudo-relatorios" class="conteudo oculto">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 20px; color: #1f2937; margin: 0;">Auditoria</h2>
-                <button class="btn-primario btn-perigo" style="width: auto; padding: 8px 12px; font-size: 12px; margin-top: 0;" onclick="fecharMes()">
+                <button class="btn-primario btn-perigo" style="width: auto; padding: 8px 12px; font-size: 12px; margin-top: 0;" onclick="confirmarZerarBase()">
                     <span class="material-symbols-outlined" style="font-size:14px">delete_sweep</span> Limpar
                 </button>
             </div>
@@ -209,7 +217,7 @@
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="font-size: 18px; color: #1f2937; margin: 0;">Avisos Recentes</h2>
-                <button id="btn-limpar-avisos" class="btn-primario btn-perigo oculto" style="width: auto; padding: 6px 12px; font-size: 11px; margin-top: 0; box-shadow: none;" onclick="abrirModalLimparAvisos()">
+                <button id="btn-limpar-avisos" class="btn-primario btn-perigo oculto" style="width: auto; padding: 6px 12px; font-size: 11px; margin-top: 0; box-shadow: none;" onclick="confirmarLimparAvisosModal()">
                     <span class="material-symbols-outlined" style="font-size:14px">delete</span> Limpar Tudo
                 </button>
             </div>
@@ -232,7 +240,7 @@
                 <span id="badge-avisos" class="badge-notif oculto">0</span>
             </button>
             
-            <button class="nav-item" onclick="sairDaConta()">
+            <button class="nav-item" onclick="confirmarSair()">
                 <span class="material-symbols-outlined nav-icon">logout</span>Sair
             </button>
         </div>
@@ -266,12 +274,12 @@
                     <input type="time" id="modal-hora-inicio-agendamento">
                 </div>
                 <div style="width: 50%;">
-                    <label>Fim (ex: 15:46):</label>
+                    <label>Fim (ex: 15:50):</label>
                     <input type="time" id="modal-hora-fim-agendamento">
                 </div>
             </div>
             <button class="btn-primario" onclick="salvarAgendamento()">Confirmar Reserva</button>
-            <button class="btn-primario" style="background: #e2e8f0; color: #475569; box-shadow: none;" onclick="fecharModalAgendamento()">Cancelar</button>
+            <button class="btn-primario btn-secundario" onclick="fecharModalAgendamento()">Cancelar</button>
         </div>
     </div>
 
@@ -284,20 +292,20 @@
             <input type="text" id="modal-sindrome-checkin" placeholder="Ex: TEA, TDAH, etc.">
             <div style="display: flex; gap: 10px;">
                 <div style="width: 50%;">
-                    <label>Início (ex: 15:00):</label>
+                    <label>Início:</label>
                     <input type="time" id="modal-hora-inicio-checkin">
                 </div>
                 <div style="width: 50%;">
-                    <label>Fim (ex: 15:46):</label>
+                    <label>Fim (estimado):</label>
                     <input type="time" id="modal-hora-fim-checkin">
                 </div>
             </div>
             <button class="btn-primario btn-sucesso" onclick="salvarCheckin()">Entrar na Sala</button>
-            <button class="btn-primario" style="background: #e2e8f0; color: #475569; box-shadow: none;" onclick="fecharModalCheckin()">Cancelar</button>
+            <button class="btn-primario btn-secundario" onclick="fecharModalCheckin()">Cancelar</button>
         </div>
     </div>
 
-    <div id="modal-overlay-alerta" class="modal-overlay oculto">
+    <div id="modal-overlay-conflito" class="modal-overlay oculto">
         <div class="modal-box alerta-caixa">
             <h3 class="alerta-titulo"><span class="material-symbols-outlined">warning</span> Conflito Detectado</h3>
             <p style="font-size: 13px; color: #4b5563; line-height: 1.5; margin-top: 5px;">
@@ -307,19 +315,25 @@
             <p style="font-size: 13px; font-weight: 700; color: #1f2937; text-align: center; margin-top: 20px;">Deseja confirmar mesmo assim?</p>
             <p style="font-size: 11px; color: #6b7280; text-align: center; margin-top: 0;">(Os profissionais acima serão notificados)</p>
             <button class="btn-primario" style="background: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);" onclick="confirmarConflito()">Sim, Confirmar e Avisar</button>
-            <button class="btn-primario" style="background: #f3f4f6; color: #4b5563; box-shadow: none; margin-top: 8px;" onclick="cancelarConflito()">Não, Cancelar</button>
+            <button class="btn-primario btn-secundario" onclick="cancelarConflito()">Não, Cancelar</button>
         </div>
     </div>
 
-    <div id="modal-overlay-limpar-avisos" class="modal-overlay oculto">
-        <div class="modal-box alerta-caixa" style="border-top-color: #ef4444;">
-            <h3 class="alerta-titulo" style="color: #b91c1c !important;"><span class="material-symbols-outlined">delete_forever</span> Limpar Avisos</h3>
-            <p style="font-size: 14px; color: #4b5563; line-height: 1.5; margin-top: 10px; text-align: center;">
-                Deseja apagar <strong>todos</strong> os avisos do mural? Isso afetará toda a clínica.
-            </p>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-primario" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-top: 0;" onclick="confirmarLimparAvisos()">Sim, Limpar</button>
-                <button class="btn-primario" style="background: #f3f4f6; color: #4b5563; margin-top: 0; box-shadow: none;" onclick="fecharModalLimparAvisos()">Cancelar</button>
+    <div id="modal-alerta-generico" class="modal-overlay oculto">
+        <div class="modal-box alerta-generico-box">
+            <div id="alerta-generico-icone-bg" class="alerta-icone-container">
+                <span id="alerta-generico-icone" class="material-symbols-outlined" style="font-size: 32px;">info</span>
+            </div>
+            <h3 id="alerta-generico-titulo">Atenção</h3>
+            <p id="alerta-generico-texto" class="alerta-texto">Mensagem de erro aqui.</p>
+            
+            <div id="alerta-botoes-simples">
+                <button class="btn-primario" id="btn-alerta-ok" onclick="fecharAlertaGenerico()">OK, entendi</button>
+            </div>
+            
+            <div id="alerta-botoes-confirmacao" class="oculto" style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn-primario" id="btn-alerta-sim" onclick="executarConfirmacaoGenerica()">Sim, confirmar</button>
+                <button class="btn-primario btn-secundario" style="margin-top:0;" onclick="fecharAlertaGenerico()">Não, cancelar</button>
             </div>
         </div>
     </div>
@@ -328,7 +342,7 @@
 
 <div id="toast-notificacao" class="oculto" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px; width:max-content; max-width:90%;">
     <span class="material-symbols-outlined" id="toast-icone" style="color:#f59e0b;">notifications_active</span>
-    <span id="toast-mensagem">Aviso!</span>
+    <span id="toast-mensagem">Atendimento em 5 minutos!</span>
 </div>
 
 <script>
@@ -376,6 +390,68 @@
     let operacaoPendente = null; 
     let salaAtualModalAgenda = 0;
 
+    // ==========================================
+    // SISTEMA DE ALERTAS PREMIUM (O NOVO CÉREBRO VISUAL)
+    // ==========================================
+    let acaoConfirmacaoPendente = null;
+
+    function mostrarAlertaAviso(mensagem) {
+        document.getElementById('alerta-generico-titulo').innerText = "Aviso";
+        document.getElementById('alerta-generico-texto').innerText = mensagem;
+        document.getElementById('alerta-generico-icone').innerText = "info";
+        document.getElementById('alerta-generico-icone-bg').style.backgroundColor = "#eff6ff";
+        document.getElementById('alerta-generico-icone').style.color = "#3b82f6";
+        document.getElementById('btn-alerta-ok').style.background = "linear-gradient(135deg, #007bff, #0056b3)";
+        
+        document.getElementById('alerta-botoes-simples').classList.remove('oculto');
+        document.getElementById('alerta-botoes-confirmacao').classList.add('oculto');
+        document.getElementById('modal-alerta-generico').classList.remove('oculto');
+    }
+
+    function mostrarAlertaErro(mensagem) {
+        document.getElementById('alerta-generico-titulo').innerText = "Erro";
+        document.getElementById('alerta-generico-texto').innerText = mensagem;
+        document.getElementById('alerta-generico-icone').innerText = "error";
+        document.getElementById('alerta-generico-icone-bg').style.backgroundColor = "#fef2f2";
+        document.getElementById('alerta-generico-icone').style.color = "#ef4444";
+        document.getElementById('btn-alerta-ok').style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
+        
+        document.getElementById('alerta-botoes-simples').classList.remove('oculto');
+        document.getElementById('alerta-botoes-confirmacao').classList.add('oculto');
+        document.getElementById('modal-alerta-generico').classList.remove('oculto');
+    }
+
+    function mostrarConfirmacao(mensagem, textoBotaoSim, funcaoAcaoSim) {
+        document.getElementById('alerta-generico-titulo').innerText = "Confirmação";
+        document.getElementById('alerta-generico-texto').innerText = mensagem;
+        document.getElementById('alerta-generico-icone').innerText = "help";
+        document.getElementById('alerta-generico-icone-bg').style.backgroundColor = "#fef3c7";
+        document.getElementById('alerta-generico-icone').style.color = "#f59e0b";
+        
+        document.getElementById('btn-alerta-sim').innerText = textoBotaoSim;
+        document.getElementById('btn-alerta-sim').style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+        
+        acaoConfirmacaoPendente = funcaoAcaoSim;
+
+        document.getElementById('alerta-botoes-simples').classList.add('oculto');
+        document.getElementById('alerta-botoes-confirmacao').classList.remove('oculto');
+        document.getElementById('modal-alerta-generico').classList.remove('oculto');
+    }
+
+    function fecharAlertaGenerico() {
+        document.getElementById('modal-alerta-generico').classList.add('oculto');
+        acaoConfirmacaoPendente = null;
+    }
+
+    function executarConfirmacaoGenerica() {
+        if (acaoConfirmacaoPendente) acaoConfirmacaoPendente();
+        fecharAlertaGenerico();
+    }
+
+
+    // ==========================================
+    // FUNÇÕES DE TEMPO BÁSICAS
+    // ==========================================
     function pegarDataDeHoje() {
         const hoje = new Date();
         const offset = hoje.getTimezoneOffset() * 60000;
@@ -400,18 +476,23 @@
     function entrarComEmail() {
         const email = document.getElementById('email-login').value.trim().toLowerCase();
         const senha = document.getElementById('senha-login').value;
-        if (!email || !senha) return alert("Preencha e-mail e senha!");
+        if (!email || !senha) return mostrarAlertaErro("Por favor, preencha o e-mail e a senha para entrar.");
+        
         const btn = document.getElementById('btn-entrar');
         btn.innerText = "Conectando..."; 
         autenticacao.signInWithEmailAndPassword(email, senha)
             .then(() => btn.innerHTML = `<span class="material-symbols-outlined">login</span> Entrar`)
             .catch((erro) => {
                 btn.innerHTML = `<span class="material-symbols-outlined">login</span> Entrar`;
-                alert("Não foi possível entrar. Verifique os dados.");
+                mostrarAlertaErro("Não foi possível entrar. Verifique se o e-mail e a senha estão corretos.");
             });
     }
 
-    function sairDaConta() { autenticacao.signOut(); }
+    function confirmarSair() {
+        mostrarConfirmacao("Tem certeza que deseja sair do sistema?", "Sair da Conta", () => {
+            autenticacao.signOut();
+        });
+    }
 
     autenticacao.onAuthStateChanged((usuario) => {
         if (usuario) {
@@ -456,7 +537,7 @@
         const senha = document.getElementById('admin-add-senha').value;
         const especialidade = document.getElementById('admin-add-especialidade').value;
 
-        if (!nome || !senha || !especialidade) return alert("Preencha Nome, Senha e Profissão!");
+        if (!nome || !senha || !especialidade) return mostrarAlertaAviso("Preencha o Nome, a Senha e a Profissão para cadastrar.");
         const emailGerado = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, '') + "@conduz.com";
 
         if(appSecundario) {
@@ -467,14 +548,14 @@
                     return appSecundario.auth().signOut();
                 })
                 .then(() => {
-                    alert(`Usuário criado com sucesso!\nO e-mail gerado foi: ${emailGerado}`);
+                    mostrarAlertaAviso(`Usuário criado com sucesso!\nO e-mail gerado para acesso foi:\n${emailGerado}`);
                     document.getElementById('admin-add-nome').value = ""; document.getElementById('admin-add-senha').value = "";
-                }).catch((erro) => alert("Erro ao criar: " + erro.message));
+                }).catch((erro) => mostrarAlertaErro("Erro ao criar usuário: " + erro.message));
         }
     }
 
     // ==========================================
-    // OUVINTES DE DADOS
+    // OUVINTES DE DADOS E BADGES
     // ==========================================
     function iniciarOuvintesGerais() {
         bancoDeDados.ref('clinica/usuarios').on('value', (snapshot) => {
@@ -524,9 +605,7 @@
     function atualizarBadgeNotificacoes() {
         let naoLidos = 0;
         muralNotificacoes.forEach(aviso => {
-            if (aviso.destinatario === nomeUsuarioAtual && !aviso.lido) {
-                naoLidos++;
-            }
+            if (aviso.destinatario === nomeUsuarioAtual && !aviso.lido) naoLidos++;
         });
 
         let badge = document.getElementById('badge-avisos');
@@ -544,7 +623,7 @@
 
 
     // ==========================================
-    // MAPA DE SALAS (AUTO CHECK-IN & CHECK-OUT)
+    // MAPA DE SALAS (AUTO CHECK-IN)
     // ==========================================
     function renderizarSalas() {
         const container = document.getElementById('container-salas');
@@ -569,15 +648,9 @@
                 if (isHoje && horaAtualStr >= ag.inicio) {
                     if (!ocupantesAtivos.some(o => o.terapeuta === ag.nome && o.horarioTexto && o.horarioTexto.includes(ag.inicio))) {
                         ocupantesAtivos.push({
-                            terapeuta: ag.nome,
-                            paciente: ag.paciente,
-                            sindrome: ag.sindrome,
-                            horarioTexto: `${ag.inicio} às ${ag.fim}`,
-                            isAgendaVirtual: true,
-                            idAgenda: idUnico,
-                            inicio: ag.inicio,
-                            fim: ag.fim,
-                            tempoTotalDefinido: calcularDiffMinutos(ag.inicio, ag.fim)
+                            terapeuta: ag.nome, paciente: ag.paciente, sindrome: ag.sindrome,
+                            horarioTexto: `${ag.inicio} às ${ag.fim}`, isAgendaVirtual: true, idAgenda: idUnico,
+                            inicio: ag.inicio, fim: ag.fim, tempoTotalDefinido: calcularDiffMinutos(ag.inicio, ag.fim)
                         });
                     }
                 }
@@ -619,15 +692,13 @@
                                 let atrasado = horaAtualStr > ocupante.fim;
                                 let btnCor = atrasado ? '#ef4444' : '#10b981';
                                 let txtBtn = atrasado ? 'Encerrar' : 'Finalizar';
-                                
-                                btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="concluirAtendimentoAgendado(${i}, '${ocupante.idAgenda}', '${ocupante.terapeuta}', '${ocupante.paciente}', '${ocupante.sindrome}', ${ocupante.tempoTotalDefinido}, '${ocupante.inicio}', '${ocupante.fim}')"><span class="material-symbols-outlined" style="font-size:14px; margin:0;">check</span> ${txtBtn}</button>`;
+                                btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="confirmarConcluirAtendimentoAgendado(${i}, '${ocupante.idAgenda}', '${ocupante.terapeuta}', '${ocupante.paciente}', '${ocupante.sindrome}', ${ocupante.tempoTotalDefinido}, '${ocupante.inicio}', '${ocupante.fim}')"><span class="material-symbols-outlined" style="font-size:14px; margin:0;">check</span> ${txtBtn}</button>`;
                             } else {
                                 let horFimManual = ocupante.horarioTexto ? ocupante.horarioTexto.split(' às ')[1] : "23:59";
                                 let atrasado = horaAtualStr > horFimManual;
-                                let btnCor = atrasado ? '#ef4444' : '#ef4444'; // Manual checkin usa vermelho pra liberar sempre
+                                let btnCor = atrasado ? '#ef4444' : '#ef4444'; 
                                 let txtBtn = atrasado ? 'Encerrar' : 'Liberar';
-
-                                btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="fazerCheckout(${i-1}, ${index})">${txtBtn}</button>`;
+                                btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="confirmarFazerCheckout(${i-1}, ${index})">${txtBtn}</button>`;
                             }
                         }
 
@@ -671,24 +742,17 @@
         }
     }
 
-    function concluirAtendimentoAgendado(numSala, idAgenda, terapeuta, paciente, sindrome, tempoTotal, inicio, fim) {
-        if (!confirm("Finalizar este atendimento e registrar na Auditoria?")) return;
-
-        let novoRegistro = { 
-            terapeuta: terapeuta, 
-            especialidade: especialidadeAtual, 
-            sala: numSala, 
-            entrada: Date.now(), 
-            saida: Date.now(),
-            tempoTotal: tempoTotal, 
-            horarioTexto: `${inicio} às ${fim}`, 
-            pacienteInfo: `${paciente} (${sindrome})`
-        };
-        
-        bancoDeDados.ref('clinica/historico_dados').push(novoRegistro);
-        bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${numSala}/${idAgenda}`).remove();
+    function confirmarConcluirAtendimentoAgendado(numSala, idAgenda, terapeuta, paciente, sindrome, tempoTotal, inicio, fim) {
+        mostrarConfirmacao("Finalizar este atendimento e enviar para a Auditoria?", "Finalizar", () => {
+            let novoRegistro = { 
+                terapeuta: terapeuta, especialidade: especialidadeAtual, sala: numSala, 
+                entrada: Date.now(), saida: Date.now(), tempoTotal: tempoTotal, 
+                horarioTexto: `${inicio} às ${fim}`, pacienteInfo: `${paciente} (${sindrome})`
+            };
+            bancoDeDados.ref('clinica/historico_dados').push(novoRegistro);
+            bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${numSala}/${idAgenda}`).remove();
+        });
     }
-
 
     // ==========================================
     // JANELA: VER AGENDA DA SALA 
@@ -721,7 +785,7 @@
             itensMostrados++;
 
             let btnExcluir = (usuarioAtual === 'admin' || ag.nome === nomeUsuarioAtual) 
-                ? `<button class="btn-acao-notif" style="color:#ef4444; padding:5px 10px;" onclick="removerAgendamento(${salaAtualModalAgenda}, '${ag.id}', true)"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>` : "";
+                ? `<button class="btn-acao-notif" style="color:#ef4444; padding:5px 10px;" onclick="confirmarRemoverAgendamento(${salaAtualModalAgenda}, '${ag.id}', true)"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>` : "";
             
             let pac = ag.paciente ? ag.paciente : "Não informado";
             let sind = ag.sindrome ? ag.sindrome : "Não informado";
@@ -761,11 +825,8 @@
             let minFimAg = parseInt(ag.fim.split(':')[0])*60 + parseInt(ag.fim.split(':')[1]);
 
             if (minInicioNovo < minFimAg && minFimNovo > minInicioAg) {
-                if (ag.nome === nomeUsuarioQueEstaTentando) {
-                    conflitosDeMimMesmo.push(ag);
-                } else {
-                    conflitosDeOutros.push({ nome: ag.nome, inicio: ag.inicio, fim: ag.fim });
-                }
+                if (ag.nome === nomeUsuarioQueEstaTentando) conflitosDeMimMesmo.push(ag);
+                else conflitosDeOutros.push({ nome: ag.nome, inicio: ag.inicio, fim: ag.fim });
             }
         }
 
@@ -796,19 +857,19 @@
         return { outros: conflitosDeOutros, mim: conflitosDeMimMesmo };
     }
 
-    function abrirModalAlerta(sobreposicoes) {
+    function abrirModalAlertaConflito(sobreposicoes) {
         let ul = document.getElementById('lista-conflitos-alerta');
         ul.innerHTML = '';
         sobreposicoes.forEach(ag => {
             ul.innerHTML += `<li style="margin-bottom:6px;"><strong>${ag.nome}</strong>: das ${ag.inicio} às ${ag.fim}</li>`;
         });
-        document.getElementById('modal-overlay-alerta').classList.remove('oculto');
+        document.getElementById('modal-overlay-conflito').classList.remove('oculto');
     }
 
-    function cancelarConflito() { operacaoPendente = null; document.getElementById('modal-overlay-alerta').classList.add('oculto'); }
+    function cancelarConflito() { operacaoPendente = null; document.getElementById('modal-overlay-conflito').classList.add('oculto'); }
 
     function confirmarConflito() {
-        document.getElementById('modal-overlay-alerta').classList.add('oculto');
+        document.getElementById('modal-overlay-conflito').classList.add('oculto');
         if (!operacaoPendente) return;
 
         let dataFormatadaAviso = dataSelecionada.split('-').reverse().join('/');
@@ -829,7 +890,7 @@
     }
 
     // ==========================================
-    // CHECK-IN MANUAL
+    // CHECK-IN MANUAL (AUTO-PREENCHIMENTO INTELIGENTE)
     // ==========================================
     function abrirModalCheckin(indexSala) {
         salaSelecionadaModalCheckin = indexSala;
@@ -838,11 +899,22 @@
 
         let jaOcupando = false;
         salasEmTempoReal.forEach(s => { if(s.ocupantes && s.ocupantes.some(o => o.terapeuta === nomeUsuarioAtual)) jaOcupando = true; });
-        if (jaOcupando) return alert("Você já está em uma sala. Libere-a primeiro!");
+        if (jaOcupando) return mostrarAlertaErro("Você já está em uma sala. Libere a sala atual antes de entrar em outra!");
 
         document.getElementById('modal-sala-num-checkin').innerText = (indexSala + 1);
-        document.getElementById('modal-paciente-checkin').value = ""; document.getElementById('modal-sindrome-checkin').value = "";
-        document.getElementById('modal-hora-inicio-checkin').value = ""; document.getElementById('modal-hora-fim-checkin').value = "";
+        document.getElementById('modal-paciente-checkin').value = ""; 
+        document.getElementById('modal-sindrome-checkin').value = "";
+        
+        // AUTO-PREENCHIMENTO DE HORA
+        let horaAgora = pegarHoraAtualString();
+        document.getElementById('modal-hora-inicio-checkin').value = horaAgora;
+
+        // BÔNUS: Adiciona 50 minutos por padrão no fim
+        let agoraDate = new Date();
+        agoraDate.setMinutes(agoraDate.getMinutes() + 50);
+        let horaFimEstimada = agoraDate.getHours().toString().padStart(2, '0') + ':' + agoraDate.getMinutes().toString().padStart(2, '0');
+        document.getElementById('modal-hora-fim-checkin').value = horaFimEstimada;
+
         document.getElementById('modal-overlay-checkin').classList.remove('oculto');
     }
 
@@ -854,23 +926,29 @@
         let inicio = document.getElementById('modal-hora-inicio-checkin').value;
         let fim = document.getElementById('modal-hora-fim-checkin').value;
 
-        if (!inicio || !fim) return alert("Preencha o horário de início e fim!");
-        
-        if (inicio > pegarHoraAtualString()) return alert("O horário de início não pode ser no futuro. Use a opção Agendar.");
+        if (!inicio || !fim) return mostrarAlertaAviso("Preencha o horário de início e fim!");
         
         let diffMinutos = calcularDiffMinutos(inicio, fim);
-        if (isNaN(diffMinutos) || diffMinutos <= 0) return alert("O horário de fim deve ser depois do início."); 
+        if (isNaN(diffMinutos) || diffMinutos <= 0) return mostrarAlertaErro("O horário de término deve ser depois do início."); 
 
         let dadosCheckin = { paciente, sindrome, inicio, fim, diffMinutos };
         let conflitos = verificarConflitos(inicio, fim, salaSelecionadaModalCheckin + 1, nomeUsuarioAtual);
         
         if (conflitos.mim.length > 0) {
-            if(!confirm("Você já possui um registro neste horário. Deseja adicionar outro paciente junto?")) return;
+            mostrarConfirmacao("Você já possui um registro neste horário. Deseja adicionar outro paciente junto?", "Sim, adicionar", () => {
+                if (conflitos.outros.length > 0) {
+                    operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
+                    abrirModalAlertaConflito(conflitos.outros);
+                } else {
+                    executarSalvarCheckin(dadosCheckin);
+                }
+            });
+            return;
         }
 
         if (conflitos.outros.length > 0) {
             operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
-            abrirModalAlerta(conflitos.outros);
+            abrirModalAlertaConflito(conflitos.outros);
             return; 
         }
 
@@ -889,8 +967,13 @@
         fecharModalCheckin();
     }
 
+    function confirmarFazerCheckout(indexSala, indexOcupante) {
+        mostrarConfirmacao("Deseja liberar a sala e registrar este atendimento na Auditoria?", "Liberar Sala", () => {
+            fazerCheckout(indexSala, indexOcupante);
+        });
+    }
+
     function fazerCheckout(indexSala, indexOcupante) {
-        if (!confirm("Liberar sala e registrar histórico?")) return;
         let salaReal = salasEmTempoReal[indexSala];
         let ocupante = salaReal.ocupantes[indexOcupante];
         let tempoMin = ocupante.tempoTotalDefinido || Math.round((Date.now() - ocupante.horaEntrada) / 60000); 
@@ -898,7 +981,7 @@
         let novoRegistro = { 
             terapeuta: ocupante.terapeuta, especialidade: ocupante.especialidade, 
             sala: salaReal.numero, entrada: ocupante.horaEntrada, saida: Date.now(),
-            horarioTexto: ocupante.horarioTexto, // Guarda texto exato!
+            horarioTexto: ocupante.horarioTexto, 
             tempoTotal: tempoMin, pacienteInfo: `${ocupante.paciente} (${ocupante.sindrome})`
         };
         bancoDeDados.ref('clinica/historico_dados').push(novoRegistro);
@@ -907,11 +990,11 @@
     }
 
     // ==========================================
-    // AGENDAMENTO E TRAVA DE HORA PASSADA
+    // AGENDAMENTO (MODAL)
     // ==========================================
     function abrirModalAgendamento(numeroSala) {
         let hoje = pegarDataDeHoje();
-        if (usuarioAtual !== 'admin' && dataSelecionada < hoje) return alert("Agendamentos passados são restritos ao Admin.");
+        if (usuarioAtual !== 'admin' && dataSelecionada < hoje) return mostrarAlertaAviso("Agendamentos passados são restritos à Administração.");
 
         salaSelecionadaModalAgendamento = numeroSala;
         document.getElementById('modal-sala-num-agendamento').innerText = numeroSala;
@@ -937,27 +1020,35 @@
         let paciente = document.getElementById('modal-paciente-agendamento').value.trim() || "Não informado";
         let sindrome = document.getElementById('modal-sindrome-agendamento').value.trim() || "Não informado";
 
-        if (!nome || !inicio || !fim) return alert("Preencha profissional e horários!");
+        if (!nome || !inicio || !fim) return mostrarAlertaAviso("Preencha profissional e horários!");
         
         if (dataSelecionada === pegarDataDeHoje() && usuarioAtual !== 'admin') {
             if (inicio < pegarHoraAtualString()) {
-                return alert("Não é permitido agendar em horários que já passaram hoje.");
+                return mostrarAlertaErro("Não é permitido agendar em horários que já passaram. Use o Check-in.");
             }
         }
 
         let diffMinutos = calcularDiffMinutos(inicio, fim);
-        if (isNaN(diffMinutos) || diffMinutos <= 0) return alert("O término deve ser maior que o início.");
+        if (isNaN(diffMinutos) || diffMinutos <= 0) return mostrarAlertaErro("O término deve ser maior que o início.");
 
         let dadosAgendamento = { nome, inicio, fim, paciente, sindrome };
         let conflitos = verificarConflitos(inicio, fim, salaSelecionadaModalAgendamento, nome);
         
         if (conflitos.mim.length > 0) {
-            if(!confirm("Você já possui um agendamento neste horário. Deseja registrar outro paciente junto?")) return;
+            mostrarConfirmacao("Você já possui um agendamento neste horário. Deseja registrar outro paciente junto?", "Sim, agendar", () => {
+                if (conflitos.outros.length > 0) {
+                    operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
+                    abrirModalAlertaConflito(conflitos.outros);
+                } else {
+                    executarSalvarAgendamento(dadosAgendamento);
+                }
+            });
+            return;
         }
 
         if (conflitos.outros.length > 0) {
             operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
-            abrirModalAlerta(conflitos.outros);
+            abrirModalAlertaConflito(conflitos.outros);
             return;
         }
         executarSalvarAgendamento(dadosAgendamento);
@@ -965,26 +1056,22 @@
 
     function executarSalvarAgendamento(dados) {
         bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${salaSelecionadaModalAgendamento}`).push(dados).then((ref) => {
-            
-            // ROBÔ 1: AVISA O TERAPEUTA QUE O ADMIN MARCOU ALGO PRA ELE
             if (usuarioAtual === 'admin' && dados.nome !== nomeUsuarioAtual) {
                 let dataFormatada = dataSelecionada.split('-').reverse().join('/');
                 bancoDeDados.ref('clinica/notificacoes').push({
-                    remetente: "Administração",
-                    destinatario: dados.nome,
+                    remetente: "Administração", destinatario: dados.nome,
                     mensagem: `📅 Novo Agendamento: Reservamos a Sala ${salaSelecionadaModalAgendamento} para você no dia ${dataFormatada}, das ${dados.inicio} às ${dados.fim}.`,
                     dataHora: Date.now(), lido: false
                 });
             }
 
-            // ROBÔ 2: SE O HORÁRIO JÁ FOR AGORA (MENOS DE 5 MINUTOS), APITA NA HORA!
             if (dataSelecionada === pegarDataDeHoje() && dados.nome === nomeUsuarioAtual) {
                 let diffAgora = calcularDiffMinutos(pegarHoraAtualString(), dados.inicio);
                 if (diffAgora > 0 && diffAgora <= 5) {
-                    mostrarToast(`Atenção: Seu atendimento começa em ${diffAgora} minuto(s)!`, 'notifications_active', '#f59e0b');
+                    mostrarToast(`Atenção: Seu atendimento na Sala ${salaSelecionadaModalAgendamento} começa em ${diffAgora} minuto(s)!`, 'notifications_active', '#f59e0b');
                     bancoDeDados.ref('clinica/notificacoes').push({
                         remetente: "Sistema Automático", destinatario: dados.nome,
-                        mensagem: `⏰ Lembrete Imediato: Seu atendimento com ${dados.paciente} na Sala ${salaSelecionadaModalAgendamento} começará em ${diffAgora} minuto(s) (às ${dados.inicio}).`,
+                        mensagem: `⏰ Lembrete Imediato: Seu atendimento na Sala ${salaSelecionadaModalAgendamento} começará em ${diffAgora} minuto(s) (às ${dados.inicio}).`,
                         dataHora: Date.now(), lido: false
                     });
                     sessionStorage.setItem(`aviso_5m_${ref.key}`, 'true'); 
@@ -994,13 +1081,14 @@
         fecharModalAgendamento();
     }
 
-    function removerAgendamento(numeroSala, id, recarregarModal = false) {
-        if (confirm("Cancelar este horário?")) {
+    function confirmarRemoverAgendamento(numeroSala, id, recarregarModal = false) {
+        mostrarConfirmacao("Deseja realmente cancelar este horário?", "Sim, cancelar", () => {
             bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${numeroSala}/${id}`).remove().then(()=> {
                 if(recarregarModal) renderizarListaAgendaModal();
             });
-        }
+        });
     }
+
 
     // ==========================================
     // ROBÔS DE TEMPO (5 MINUTOS E FIM DE SESSÃO)
@@ -1029,7 +1117,6 @@
             for (let id in agendamentos) {
                 let ag = agendamentos[id];
                 if (ag.nome === nomeUsuarioAtual) {
-                    // AVISO DE INÍCIO (5 MINUTOS)
                     if (ag.inicio === horaDaqui5Min) {
                         let key = `aviso_5m_${id}`;
                         if (!sessionStorage.getItem(key)) {
@@ -1042,8 +1129,6 @@
                             });
                         }
                     }
-                    
-                    // AVISO DE FIM (AGENDAMENTO VIRTUAL ATIVO)
                     if (ag.fim === horaAtualStr) {
                         let keyFim = `aviso_fim_ag_${id}`;
                         if (!sessionStorage.getItem(keyFim)) {
@@ -1051,7 +1136,7 @@
                             mostrarToast(`Seu tempo na Sala ${i} acabou. Lembre-se de Finalizar!`, 'alarm_off', '#ef4444');
                             bancoDeDados.ref('clinica/notificacoes').push({
                                 remetente: "Sistema Automático", destinatario: nomeUsuarioAtual,
-                                mensagem: `🔔 Fim do Atendimento: O horário do seu atendimento na Sala ${i} encerrou (${ag.fim}). Por favor, clique em "Finalizar" para liberar a sala.`,
+                                mensagem: `🔔 Fim do Atendimento: O horário do seu agendamento na Sala ${i} encerrou (${ag.fim}). Por favor, clique em "Finalizar" para limpar a sala.`,
                                 dataHora: Date.now(), lido: false
                             });
                         }
@@ -1117,7 +1202,7 @@
 
         listaFiltrada.forEach(user => {
             let btnExcluir = user.email !== EMAIL_ADMIN 
-                ? `<button class="btn-acao-notif" style="color:#ef4444;" onclick="excluirUsuarioBd('${user.id}', '${user.nome}')"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>` 
+                ? `<button class="btn-acao-notif" style="color:#ef4444;" onclick="confirmarExcluirUsuario('${user.id}', '${user.nome}')"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>` 
                 : `<span style="font-size:10px; color:#10b981; font-weight:bold;">Admin</span>`;
             let li = document.createElement('li'); li.className = 'card-item';
             li.style.display = 'flex'; li.style.justifyContent = 'space-between'; li.style.alignItems = 'center';
@@ -1126,7 +1211,11 @@
         });
     }
 
-    function excluirUsuarioBd(uid, nome) { if (confirm(`Remover ${nome} da equipe?`)) bancoDeDados.ref('clinica/usuarios/' + uid).remove(); }
+    function confirmarExcluirUsuario(uid, nome) {
+        mostrarConfirmacao(`Deseja remover o acesso de ${nome} da equipe?`, "Remover Profissional", () => {
+            bancoDeDados.ref('clinica/usuarios/' + uid).remove();
+        });
+    }
 
     function prepararFiltrosRelatorio() {
         const terapeutasSet = new Set();
@@ -1168,8 +1257,6 @@
         dadosFiltrados.forEach(reg => {
             totalMinutos += reg.tempoTotal;
             let dataFormatada = new Date(reg.entrada).toLocaleDateString('pt-BR'); 
-            
-            // NOVIDADE DA AUDITORIA: Mostra o texto exato do horário
             let horaEntradaFallback = new Date(reg.entrada).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
             let horaSaidaFallback = new Date(reg.saida).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
             let textoHorarioExibicao = reg.horarioTexto ? reg.horarioTexto : `${horaEntradaFallback} às ${horaSaidaFallback}`;
@@ -1194,7 +1281,11 @@
         resumo.innerHTML = `Tempo Total da Seleção: <span style="color:#0f172a;">${horas > 0 ? `${horas}h ${min}m` : `${min} min`}</span>`;
     }
 
-    function fecharMes() { if (confirm("ZERAR relatórios financeiros/horas?")) bancoDeDados.ref('clinica/historico_dados').remove(); }
+    function confirmarZerarBase() {
+        mostrarConfirmacao("Atenção: Você está prestes a apagar permanentemente todos os registros de auditoria/horas. Deseja continuar?", "Zerar Banco de Dados", () => {
+            bancoDeDados.ref('clinica/historico_dados').remove();
+        });
+    }
 
     function atualizarMenuDestinatarios() {
         const select = document.getElementById('notif-destinatario');
@@ -1205,15 +1296,17 @@
     function enviarNotificacao() {
         const destinatario = document.getElementById('notif-destinatario').value;
         const mensagem = document.getElementById('notif-mensagem').value.trim();
-        if (!mensagem) return alert("Digite uma mensagem!");
+        if (!mensagem) return mostrarAlertaAviso("A mensagem não pode estar vazia.");
         bancoDeDados.ref('clinica/notificacoes').push({ remetente: "Administração", destinatario: destinatario, mensagem: mensagem, dataHora: Date.now(), lido: false }).then(() => {
-            alert("Aviso enviado!"); document.getElementById('notif-mensagem').value = ""; 
+            mostrarAlertaAviso("Aviso enviado com sucesso!"); document.getElementById('notif-mensagem').value = ""; 
         });
     }
 
-    function abrirModalLimparAvisos() { document.getElementById('modal-overlay-limpar-avisos').classList.remove('oculto'); }
-    function fecharModalLimparAvisos() { document.getElementById('modal-overlay-limpar-avisos').classList.add('oculto'); }
-    function confirmarLimparAvisos() { bancoDeDados.ref('clinica/notificacoes').remove().then(() => { fecharModalLimparAvisos(); }); }
+    function confirmarLimparAvisosModal() {
+        mostrarConfirmacao("Deseja apagar TODOS os avisos do mural? Isso afetará toda a clínica.", "Limpar Avisos", () => {
+            bancoDeDados.ref('clinica/notificacoes').remove();
+        });
+    }
 
     function renderizarAvisos() {
         const container = document.getElementById('lista-notificacoes');
@@ -1239,7 +1332,7 @@
                         <div>${statusLido}</div>
                         <div>
                             <button class="btn-acao-notif" style="color:#2563eb;" onclick="editarAviso('${aviso.id}', '${aviso.mensagem.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined icon-sm" style="color:#2563eb;">edit</span></button>
-                            <button class="btn-acao-notif" style="color:#ef4444;" onclick="excluirAviso('${aviso.id}')"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>
+                            <button class="btn-acao-notif" style="color:#ef4444;" onclick="confirmarExcluirAviso('${aviso.id}')"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>
                         </div>
                     </div>
                 `;
@@ -1263,11 +1356,17 @@
         });
     }
 
-    function excluirAviso(id) { if(confirm("Tem certeza que deseja apagar este aviso?")) bancoDeDados.ref('clinica/notificacoes/' + id).remove(); }
+    function confirmarExcluirAviso(id) {
+        mostrarConfirmacao("Tem certeza que deseja apagar este aviso?", "Apagar", () => {
+            bancoDeDados.ref('clinica/notificacoes/' + id).remove();
+        });
+    }
+
     function editarAviso(id, msgAtual) {
         let novaMsg = prompt("Edite o aviso:", msgAtual);
         if(novaMsg && novaMsg.trim() !== "") bancoDeDados.ref('clinica/notificacoes/' + id).update({mensagem: novaMsg});
     }
+    
     function marcarAvisoLido(id) { bancoDeDados.ref('clinica/notificacoes/' + id).update({lido: true}); }
 
 </script>
