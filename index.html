@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Conduz - Gestão Premium</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet" />
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <style>
+        /* --- ESTILOS VISUAIS PREMIUM --- */
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; margin: 0; color: #333; }
+        .oculto { display: none !important; }
+        
+        .material-symbols-outlined { vertical-align: middle; font-size: 18px; margin-right: 4px; }
+        .icon-sm { font-size: 15px; margin-right: 3px; color: #6b7280; }
+
+        #app-container { max-width: 414px; margin: 0 auto; background-color: #fafbfc; min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.08); padding-bottom: 80px; }
+        
+        .header { background: linear-gradient(135deg, #0052d4 0%, #4364f7 50%, #6fb1fc 100%); color: white; padding: 25px 20px; text-align: center; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 15px rgba(67, 100, 247, 0.3); margin-bottom: 20px;}
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+        .header p { margin: 5px 0 0 0; font-size: 13px; font-weight: 400; opacity: 0.9; }
+        
+        #tela-login { padding: 40px 20px; text-align: center; }
+        .card-login { background: white; padding: 35px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        
+        input, select, textarea { width: 100%; padding: 12px 15px; margin: 8px 0; border: 1.5px solid #e1e4e8; border-radius: 12px; box-sizing: border-box; font-size: 14px; font-family: 'Inter', sans-serif; transition: border-color 0.3s; background-color: #fcfcfc;}
+        input:focus, select:focus, textarea:focus { border-color: #4364f7; outline: none; background-color: #fff;}
+        
+        button { font-family: 'Inter', sans-serif; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-primario { padding: 14px; background: linear-gradient(135deg, #007bff, #0056b3); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600; width: 100%; margin-top: 15px; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); }
+        .btn-primario:active { transform: translateY(2px); box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25); }
+        .btn-perigo { background: linear-gradient(135deg, #dc3545, #b02a37); box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25); }
+        .btn-sucesso { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+        
+        .conteudo { padding: 0 20px 20px 20px; }
+        
+        .barra-data { background: white; padding: 18px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-bottom: 25px; text-align: center; border: 1px solid #f0f0f0;}
+        .barra-data input[type="date"] { font-size: 16px; font-weight: 600; color: #222; text-align: center; border: 2px solid #e1e4e8; padding: 12px; background: #fff; margin-bottom: 12px; border-radius: 10px;}
+        .caixa-pesquisa { position: relative; margin-bottom: 5px; }
+        .caixa-pesquisa input { padding-left: 40px; margin: 0; background-color: #f5f7fa; border: none; border-radius: 10px;}
+        .caixa-pesquisa::before { content: 'search'; font-family: 'Material Symbols Outlined'; position: absolute; left: 14px; top: 12px; font-size: 18px; color: #9ca3af;}
+
+        .grid-salas { display: flex; flex-direction: column; gap: 20px; }
+        .sala { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); border-left: 6px solid #d1d5db; position: relative; border-top: 1px solid #f8f9fa; border-right: 1px solid #f8f9fa;}
+        .sala.minha-sala { border-left: 6px solid #10b981; background-color: #f6fdf9; border-top: 1px solid #e2f5ea; border-right: 1px solid #e2f5ea;}
+        .sala-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f2f5; padding-bottom: 12px; margin-bottom: 15px; }
+        .sala-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1f2937; }
+        
+        .btn-adicionar { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;}
+        .btn-acao-sala { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 10px; padding: 10px 12px; font-size: 14px; cursor: pointer; font-weight: 600; width: 100%; text-align: center; display: block; margin-top: 8px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);}
+        .btn-acao-sala.secundario { background: white; color: #10b981; border: 2px dashed #10b981; box-shadow: none;}
+        .btn-ver-agenda { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 13px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 10px;}
+        
+        .bloco-horario { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between; align-items: flex-start;}
+        .bloco-paciente { background: #fef3c7; border: 1px solid #fde68a; padding: 12px; border-radius: 12px; margin-bottom: 10px; font-size: 13px; display: flex; justify-content: space-between; align-items: center;}
+        .bloco-paciente strong { color: #b45309; font-size: 14px;}
+        .btn-liberar { background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-weight: 600;}
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;}
+        .modal-box h3 { margin-top: 0; color: #1f2937; font-weight: 700; font-size: 18px;}
+        .modal-box label { font-size: 12px; font-weight: 600; color: #6b7280; display: block; margin-top: 12px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        #modal-overlay-alerta, #modal-overlay-limpar-avisos { z-index: 1100; }
+        .alerta-caixa { border-top: 6px solid #f59e0b; }
+        .alerta-titulo { color: #b45309 !important; display: flex; align-items: center; gap: 8px;}
+        .lista-conflitos { background: #fef3c7; padding: 12px 12px 12px 30px; border-radius: 8px; font-size: 13px; color: #b45309; margin: 15px 0;}
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 414px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 0 15px 0; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); left: 50%; transform: translateX(-50%); z-index: 100; border-top: 1px solid #f0f0f0;}
+        .nav-item { position: relative; flex: 1; background: none; border: none; color: #9ca3af; font-size: 11px; display: flex; flex-direction: column; align-items: center; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif;}
+        .nav-item.ativo { color: #2563eb; font-weight: 700; }
+        .nav-icon { font-size: 22px; margin-bottom: 4px; transition: transform 0.2s;}
+        
+        /* A BOLINHA DE NOTIFICAÇÃO (BADGE) */
+        .badge-notif { position: absolute; top: 0px; right: calc(50% - 22px); background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); pointer-events: none;}
+        
+        ul { list-style: none; padding: 0; margin: 0; }
+        li.card-item { background: white; padding: 18px; margin-bottom: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); font-size: 14px; border-left: 5px solid #3b82f6;}
+        
+        .form-admin-add { background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .aviso-dia-diferente { background: #f3f4f6; color: #6b7280; font-size: 13px; text-align: center; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-weight: 500;}
+        
+        .painel-resumo { background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; padding: 15px; border-radius: 16px; font-weight: 700; text-align: center; margin-bottom: 20px; border: 1px solid #bfdbfe; font-size: 15px;}
+        .tag-data { background: #f1f5f9; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #475569; }
+        .linha-detalhe { font-size: 13px; color: #4b5563; line-height: 1.6; margin-top: 10px; }
+        
+        .bloco-notificacao { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; border-top: 4px solid #f59e0b;}
+        .notif-data { font-size: 11px; color: #9ca3af; margin-bottom: 8px; display: block; font-weight: 500;}
+        .notif-msg { color: #1f2937; font-size: 14px; line-height: 1.5;}
+        .notif-remetente { font-size: 12px; color: #2563eb; font-weight: 700; margin-top: 12px; display: block;}
+        .btn-acao-notif { background: #f3f4f6; border: none; font-size: 12px; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-weight: 600; color: #4b5563;}
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    
+    <div id="tela-login">
+        <div class="header">
+            <h1>Clínica Conduz</h1>
+            <p>Sistema de Gestão Integrada</p>
+        </div>
+        <div class="card-login">
+            <h2 style="margin-top: 0; color: #1f2937;">Acesso à Plataforma</h2>
+            <input type="email" id="email-login" placeholder="E-mail (ex: nome@conduz.com)">
+            <input type="password" id="senha-login" placeholder="Sua Senha">
+            <button id="btn-entrar" class="btn-primario" onclick="entrarComEmail()">
+                <span class="material-symbols-outlined">login</span> Entrar
+            </button>
+        </div>
+    </div>
+
+    <div id="tela-app" class="oculto">
+        <div class="header">
+            <h1 id="titulo-usuario">Painel Operacional</h1>
+            <p id="subtitulo-usuario">Carregando...</p>
+        </div>
+        
+        <div id="conteudo-salas" class="conteudo">
+            <div class="barra-data">
+                <label style="display:block; font-size: 12px; color: #6b7280; margin-bottom: 8px; font-weight: 600; text-transform: uppercase;">Visualizando o Dia</label>
+                <input type="date" id="input-data" onchange="mudarData()">
+                <div class="caixa-pesquisa">
+                    <input type="text" id="pesquisa-sala" placeholder="Procurar sala ou profissional..." oninput="renderizarSalas()">
+                </div>
+            </div>
+            <div class="grid-salas" id="container-salas"></div>
+        </div>
+        
+        <div id="conteudo-relatorios" class="conteudo oculto">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="font-size: 20px; color: #1f2937; margin: 0;">Auditoria</h2>
+                <button class="btn-primario btn-perigo" style="width: auto; padding: 8px 12px; font-size: 12px; margin-top: 0;" onclick="fecharMes()">
+                    <span class="material-symbols-outlined" style="font-size:14px">delete_sweep</span> Limpar
+                </button>
+            </div>
+            
+            <div style="background: white; padding: 18px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                <label style="font-size: 12px; font-weight: bold; color: #6b7280;">Filtrar Profissional:</label>
+                <select id="filtro-terapeuta" onchange="renderizarDadosRelatorio()"></select>
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="width: 50%;">
+                        <label style="font-size: 11px; color: #9ca3af;">Data Início:</label>
+                        <input type="date" id="filtro-data-inicio" onchange="renderizarDadosRelatorio()" style="margin:0; padding: 10px;">
+                    </div>
+                    <div style="width: 50%;">
+                        <label style="font-size: 11px; color: #9ca3af;">Data Fim:</label>
+                        <input type="date" id="filtro-data-fim" onchange="renderizarDadosRelatorio()" style="margin:0; padding: 10px;">
+                    </div>
+                </div>
+            </div>
+
+            <div id="resumo-relatorio" class="painel-resumo">Calculando...</div>
+            <ul id="lista-relatorios"></ul>
+        </div>
+
+        <div id="conteudo-usuarios" class="conteudo oculto">
+            <div class="form-admin-add">
+                <h3 style="margin-top: 0; font-size: 16px; display:flex; align-items:center;">
+                    <span class="material-symbols-outlined" style="color:#007BFF">person_add</span> Adicionar Profissional
+                </h3>
+                <p style="font-size: 11px; color: #6b7280; margin-top: 0;">E-mail automático: nome@conduz.com</p>
+                <input type="text" id="admin-add-nome" placeholder="Nome Completo">
+                <input type="password" id="admin-add-senha" placeholder="Senha Inicial (mín. 6 letras)">
+                <select id="admin-add-especialidade">
+                    <option value="" disabled selected>Selecione a Profissão...</option>
+                    <option value="Psicóloga(o)">Psicóloga(o)</option>
+                    <option value="Fonoaudióloga(o)">Fonoaudióloga(o)</option>
+                    <option value="Fisioterapeuta">Fisioterapeuta</option>
+                    <option value="T.O.">Terapeuta Ocupacional</option>
+                    <option value="Psicopedagoga(o)">Psicopedagoga(o)</option>
+                    <option value="Nutricionista">Nutricionista</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <button class="btn-primario btn-sucesso" onclick="adminCriarUsuario()">Cadastrar na Equipe</button>
+            </div>
+            
+            <h2 style="font-size: 18px; color: #1f2937; margin-bottom: 10px;">Equipe Ativa</h2>
+            <div class="caixa-pesquisa">
+                <input type="text" id="pesquisa-equipe" placeholder="Buscar por nome..." oninput="renderizarAbaUsuarios()">
+            </div>
+            <ul id="lista-usuarios-admin"></ul>
+        </div>
+
+        <div id="conteudo-notificacoes" class="conteudo oculto">
+            <div id="painel-enviar-notificacao" class="form-admin-add oculto">
+                <h3 style="margin-top: 0; font-size: 16px; display:flex; align-items:center;">
+                    <span class="material-symbols-outlined" style="color:#007BFF">campaign</span> Enviar Comunicado
+                </h3>
+                <label>Destinatário</label>
+                <select id="notif-destinatario">
+                    <option value="todos">Mural Geral (Todos)</option>
+                </select>
+                <label>Mensagem</label>
+                <textarea id="notif-mensagem" rows="3" placeholder="Escreva o recado aqui..."></textarea>
+                <button class="btn-primario" onclick="enviarNotificacao()">
+                    <span class="material-symbols-outlined">send</span> Enviar
+                </button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="font-size: 18px; color: #1f2937; margin: 0;">Avisos Recentes</h2>
+                <button id="btn-limpar-avisos" class="btn-primario btn-perigo oculto" style="width: auto; padding: 6px 12px; font-size: 11px; margin-top: 0; box-shadow: none;" onclick="abrirModalLimparAvisos()">
+                    <span class="material-symbols-outlined" style="font-size:14px">delete</span> Limpar Tudo
+                </button>
+            </div>
+            <div id="lista-notificacoes"></div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-item ativo" id="btn-nav-salas" onclick="mudarAba('salas')">
+                <span class="material-symbols-outlined nav-icon">map</span>Mapa
+            </button>
+            <button class="nav-item oculto" id="btn-nav-relatorios" onclick="mudarAba('relatorios')">
+                <span class="material-symbols-outlined nav-icon">bar_chart</span>Auditoria
+            </button>
+            <button class="nav-item oculto" id="btn-nav-usuarios" onclick="mudarAba('usuarios')">
+                <span class="material-symbols-outlined nav-icon">group</span>Equipe
+            </button>
+            
+            <button class="nav-item" id="btn-nav-notificacoes" onclick="mudarAba('notificacoes')">
+                <span class="material-symbols-outlined nav-icon" id="icone-sino">notifications</span>Avisos
+                <span id="badge-avisos" class="badge-notif oculto">0</span>
+            </button>
+            
+            <button class="nav-item" onclick="sairDaConta()">
+                <span class="material-symbols-outlined nav-icon">logout</span>Sair
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-overlay-agenda-sala" class="modal-overlay oculto">
+        <div class="modal-box" style="padding: 20px; width: 90%; max-width: 400px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <h3 style="margin:0; display:flex; align-items:center;"><span class="material-symbols-outlined" style="color:#007BFF; font-size:24px;">event_note</span> Agenda Sala <span id="modal-agenda-num"></span></h3>
+                <button style="background:none; border:none; font-size:24px; cursor:pointer; color:#9ca3af; padding:0;" onclick="fecharModalAgendaSala()"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="caixa-pesquisa" style="margin-bottom: 15px;">
+                <input type="text" id="pesquisa-agenda-modal" placeholder="Pesquisar profissional..." oninput="renderizarListaAgendaModal()">
+            </div>
+            <div id="modal-agenda-lista" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay-agendamento" class="modal-overlay oculto">
+        <div class="modal-box">
+            <h3 style="display:flex; align-items:center;"><span class="material-symbols-outlined" style="color:#007BFF">add_circle</span> Reservar Sala <span id="modal-sala-num-agendamento"></span></h3>
+            <label>Profissional:</label>
+            <select id="modal-select-user-agendamento"></select>
+            <label>Paciente / Criança:</label>
+            <input type="text" id="modal-paciente-agendamento" placeholder="Ex: Joãozinho">
+            <label>Diagnóstico / Perfil:</label>
+            <input type="text" id="modal-sindrome-agendamento" placeholder="Ex: TEA, TDAH, etc.">
+            <div style="display: flex; gap: 10px;">
+                <div style="width: 50%;">
+                    <label>Início (ex: 15:00):</label>
+                    <input type="time" id="modal-hora-inicio-agendamento">
+                </div>
+                <div style="width: 50%;">
+                    <label>Fim (ex: 15:46):</label>
+                    <input type="time" id="modal-hora-fim-agendamento">
+                </div>
+            </div>
+            <button class="btn-primario" onclick="salvarAgendamento()">Confirmar Reserva</button>
+            <button class="btn-primario" style="background: #e2e8f0; color: #475569; box-shadow: none;" onclick="fecharModalAgendamento()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay-checkin" class="modal-overlay oculto">
+        <div class="modal-box">
+            <h3 style="color: #059669; display:flex; align-items:center;"><span class="material-symbols-outlined">play_circle</span> Check-in (Sala <span id="modal-sala-num-checkin"></span>)</h3>
+            <label>Paciente / Criança:</label>
+            <input type="text" id="modal-paciente-checkin" placeholder="Ex: Joãozinho">
+            <label>Diagnóstico / Perfil:</label>
+            <input type="text" id="modal-sindrome-checkin" placeholder="Ex: TEA, TDAH, etc.">
+            <div style="display: flex; gap: 10px;">
+                <div style="width: 50%;">
+                    <label>Início (ex: 15:00):</label>
+                    <input type="time" id="modal-hora-inicio-checkin">
+                </div>
+                <div style="width: 50%;">
+                    <label>Fim (ex: 15:46):</label>
+                    <input type="time" id="modal-hora-fim-checkin">
+                </div>
+            </div>
+            <button class="btn-primario btn-sucesso" onclick="salvarCheckin()">Entrar na Sala</button>
+            <button class="btn-primario" style="background: #e2e8f0; color: #475569; box-shadow: none;" onclick="fecharModalCheckin()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay-alerta" class="modal-overlay oculto">
+        <div class="modal-box alerta-caixa">
+            <h3 class="alerta-titulo"><span class="material-symbols-outlined">warning</span> Conflito Detectado</h3>
+            <p style="font-size: 13px; color: #4b5563; line-height: 1.5; margin-top: 5px;">
+                O horário escolhido cruza com os seguintes agendamentos ou check-ins nesta sala:
+            </p>
+            <ul id="lista-conflitos-alerta" class="lista-conflitos"></ul>
+            <p style="font-size: 13px; font-weight: 700; color: #1f2937; text-align: center; margin-top: 20px;">Deseja confirmar mesmo assim?</p>
+            <p style="font-size: 11px; color: #6b7280; text-align: center; margin-top: 0;">(Os profissionais acima serão notificados)</p>
+            <button class="btn-primario" style="background: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);" onclick="confirmarConflito()">Sim, Confirmar e Avisar</button>
+            <button class="btn-primario" style="background: #f3f4f6; color: #4b5563; box-shadow: none; margin-top: 8px;" onclick="cancelarConflito()">Não, Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay-limpar-avisos" class="modal-overlay oculto">
+        <div class="modal-box alerta-caixa" style="border-top-color: #ef4444;">
+            <h3 class="alerta-titulo" style="color: #b91c1c !important;"><span class="material-symbols-outlined">delete_forever</span> Limpar Avisos</h3>
+            <p style="font-size: 14px; color: #4b5563; line-height: 1.5; margin-top: 10px; text-align: center;">
+                Deseja apagar <strong>todos</strong> os avisos do mural? Isso afetará toda a clínica.
+            </p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-primario" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-top: 0;" onclick="confirmarLimparAvisos()">Sim, Limpar</button>
+                <button class="btn-primario" style="background: #f3f4f6; color: #4b5563; margin-top: 0; box-shadow: none;" onclick="fecharModalLimparAvisos()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="toast-notificacao" class="oculto" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px; width:max-content; max-width:90%;">
+    <span class="material-symbols-outlined" style="color:#f59e0b;">notifications_active</span>
+    <span id="toast-mensagem">Atendimento em 5 minutos!</span>
+</div>
+
+<script>
+    // ==========================================
+    // 1. CHAVES DO FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQeydMG0V9QmdM_5txbFwGZiwj8BxnCbM",
+        authDomain: "app-clinica-330a8.firebaseapp.com",
+        databaseURL: "https://app-clinica-330a8-default-rtdb.firebaseio.com",
+        projectId: "app-clinica-330a8",
+        storageBucket: "app-clinica-330a8.firebasestorage.app",
+        messagingSenderId: "634839285306",
+        appId: "1:634839285306:web:776f5fe7092c40cb913f03"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const bancoDeDados = firebase.database();
+    const autenticacao = firebase.auth(); 
+
+    let appSecundario;
+    try {
+        if (firebase.apps.length < 2) appSecundario = firebase.initializeApp(firebaseConfig, "AppAdmin");
+        else appSecundario = firebase.app("AppAdmin");
+    } catch (e) { console.error("Erro no app secundário", e); }
+
+    const EMAIL_ADMIN = "admin@conduz.com"; 
+    const NUMERO_DE_SALAS = 10;
+
+    let usuarioAtual = null; 
+    let nomeUsuarioAtual = ""; 
+    let especialidadeAtual = ""; 
+    let meuUid = "";
+    
+    let dataSelecionada = ""; 
+    let agendaDoDia = {}; 
+    let ouvinteFirebase = null; 
+    let salasEmTempoReal = []; 
+    let registrosHistorico = [];
+    let listaUsuariosCadastrados = []; 
+    let muralNotificacoes = [];
+    
+    let salaSelecionadaModalAgendamento = 0; 
+    let salaSelecionadaModalCheckin = 0;
+    let operacaoPendente = null; 
+    let salaAtualModalAgenda = 0;
+
+    function pegarDataDeHoje() {
+        const hoje = new Date();
+        const offset = hoje.getTimezoneOffset() * 60000;
+        return new Date(hoje.getTime() - offset).toISOString().split('T')[0];
+    }
+    
+    function pegarHoraAtualString() {
+        const agora = new Date();
+        return agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
+    }
+
+    function calcularDiffMinutos(inicio, fim) {
+        let t1 = inicio.split(':'); let t2 = fim.split(':');
+        let minInicio = parseInt(t1[0])*60 + parseInt(t1[1]);
+        let minFim = parseInt(t2[0])*60 + parseInt(t2[1]);
+        return minFim - minInicio;
+    }
+
+    // ==========================================
+    // LOGIN E AUTH
+    // ==========================================
+    function entrarComEmail() {
+        const email = document.getElementById('email-login').value.trim().toLowerCase();
+        const senha = document.getElementById('senha-login').value;
+        if (!email || !senha) return alert("Preencha e-mail e senha!");
+        const btn = document.getElementById('btn-entrar');
+        btn.innerText = "Conectando..."; 
+        autenticacao.signInWithEmailAndPassword(email, senha)
+            .then(() => btn.innerHTML = `<span class="material-symbols-outlined">login</span> Entrar`)
+            .catch((erro) => {
+                btn.innerHTML = `<span class="material-symbols-outlined">login</span> Entrar`;
+                alert("Não foi possível entrar. Verifique os dados.");
+            });
+    }
+
+    function sairDaConta() { autenticacao.signOut(); }
+
+    autenticacao.onAuthStateChanged((usuario) => {
+        if (usuario) {
+            nomeUsuarioAtual = usuario.displayName || "Usuário";
+            meuUid = usuario.uid;
+            
+            bancoDeDados.ref('clinica/usuarios/' + usuario.uid).once('value').then((snapshot) => {
+                const dados = snapshot.val();
+                especialidadeAtual = dados ? dados.especialidade : "Profissional";
+
+                if (usuario.email === EMAIL_ADMIN) {
+                    usuarioAtual = 'admin';
+                    document.getElementById('subtitulo-usuario').innerText = 'Acesso Administrativo';
+                    document.getElementById('btn-nav-relatorios').classList.remove('oculto'); 
+                    document.getElementById('btn-nav-usuarios').classList.remove('oculto'); 
+                    document.getElementById('painel-enviar-notificacao').classList.remove('oculto'); 
+                    document.getElementById('btn-limpar-avisos').classList.remove('oculto');
+                } else {
+                    usuarioAtual = 'terapeuta';
+                    document.getElementById('subtitulo-usuario').innerText = `${nomeUsuarioAtual} - ${especialidadeAtual}`;
+                    document.getElementById('btn-nav-relatorios').classList.add('oculto'); 
+                    document.getElementById('btn-nav-usuarios').classList.add('oculto'); 
+                    document.getElementById('painel-enviar-notificacao').classList.add('oculto'); 
+                    document.getElementById('btn-limpar-avisos').classList.add('oculto');
+                }
+                
+                document.getElementById('tela-login').classList.add('oculto');
+                document.getElementById('tela-app').classList.remove('oculto');
+                document.getElementById('input-data').value = pegarDataDeHoje();
+                mudarData(); 
+                iniciarOuvintesGerais();
+            });
+        } else {
+            usuarioAtual = null;
+            document.getElementById('tela-app').classList.add('oculto');
+            document.getElementById('tela-login').classList.remove('oculto');
+        }
+    });
+
+    function adminCriarUsuario() {
+        const nome = document.getElementById('admin-add-nome').value.trim();
+        const senha = document.getElementById('admin-add-senha').value;
+        const especialidade = document.getElementById('admin-add-especialidade').value;
+
+        if (!nome || !senha || !especialidade) return alert("Preencha Nome, Senha e Profissão!");
+        const emailGerado = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, '') + "@conduz.com";
+
+        if(appSecundario) {
+            appSecundario.auth().createUserWithEmailAndPassword(emailGerado, senha)
+                .then((credenciais) => {
+                    credenciais.user.updateProfile({ displayName: nome });
+                    bancoDeDados.ref('clinica/usuarios/' + credenciais.user.uid).set({ nome, email: emailGerado, especialidade });
+                    return appSecundario.auth().signOut();
+                })
+                .then(() => {
+                    alert(`Usuário criado com sucesso!\nO e-mail gerado foi: ${emailGerado}`);
+                    document.getElementById('admin-add-nome').value = ""; document.getElementById('admin-add-senha').value = "";
+                }).catch((erro) => alert("Erro ao criar: " + erro.message));
+        }
+    }
+
+    // ==========================================
+    // OUVINTES DE DADOS
+    // ==========================================
+    function iniciarOuvintesGerais() {
+        bancoDeDados.ref('clinica/usuarios').on('value', (snapshot) => {
+            listaUsuariosCadastrados = [];
+            snapshot.forEach(filho => { listaUsuariosCadastrados.push({ id: filho.key, ...filho.val() }); });
+            if(usuarioAtual === 'admin') { renderizarAbaUsuarios(); atualizarMenuDestinatarios(); }
+        });
+
+        bancoDeDados.ref('clinica/salas').on('value', (snapshot) => {
+            const dados = snapshot.val();
+            if (dados) salasEmTempoReal = dados;
+            else {
+                salasEmTempoReal = [];
+                for (let i = 1; i <= 10; i++) salasEmTempoReal.push({ numero: i, ocupantes: [] });
+                bancoDeDados.ref('clinica/salas').set(salasEmTempoReal); 
+            }
+            if (usuarioAtual) renderizarSalas(); 
+        });
+
+        bancoDeDados.ref('clinica/historico_dados').on('value', (snapshot) => {
+            const dados = snapshot.val();
+            registrosHistorico = dados ? Object.values(dados).reverse() : [];
+            if (usuarioAtual === 'admin') prepararFiltrosRelatorio();
+        });
+
+        bancoDeDados.ref('clinica/notificacoes').on('value', (snapshot) => {
+            muralNotificacoes = [];
+            snapshot.forEach(child => { muralNotificacoes.push({ id: child.key, ...child.val() }); });
+            muralNotificacoes.reverse();
+            if (usuarioAtual) {
+                renderizarAvisos();
+                atualizarBadgeNotificacoes();
+            }
+        });
+    }
+
+    function mudarData() {
+        dataSelecionada = document.getElementById('input-data').value;
+        if (ouvinteFirebase) bancoDeDados.ref('clinica/agenda/' + ouvinteFirebase).off('value');
+        ouvinteFirebase = dataSelecionada;
+        bancoDeDados.ref('clinica/agenda/' + dataSelecionada).on('value', (snapshot) => {
+            agendaDoDia = snapshot.val() || {}; 
+            if (usuarioAtual) renderizarSalas();
+        });
+    }
+
+    // ==========================================
+    // A MÁGICA DA BOLINHA DE NOTIFICAÇÃO
+    // ==========================================
+    function atualizarBadgeNotificacoes() {
+        let naoLidos = 0;
+        muralNotificacoes.forEach(aviso => {
+            if (aviso.destinatario === nomeUsuarioAtual && !aviso.lido) {
+                naoLidos++;
+            }
+        });
+
+        let badge = document.getElementById('badge-avisos');
+        let iconeSino = document.getElementById('icone-sino');
+
+        if (naoLidos > 0) {
+            badge.innerText = naoLidos > 9 ? '9+' : naoLidos;
+            badge.classList.remove('oculto');
+            iconeSino.style.color = '#ef4444'; 
+        } else {
+            badge.classList.add('oculto');
+            iconeSino.style.color = ''; 
+        }
+    }
+
+
+    // ==========================================
+    // MAPA DE SALAS (AUTO CHECK-IN & CHECK-OUT)
+    // ==========================================
+    function renderizarSalas() {
+        const container = document.getElementById('container-salas');
+        const termoBusca = document.getElementById('pesquisa-sala').value.toLowerCase();
+        container.innerHTML = ''; 
+        let isHoje = (dataSelecionada === pegarDataDeHoje());
+        let horaAtualStr = pegarHoraAtualString();
+
+        for (let i = 1; i <= NUMERO_DE_SALAS; i++) {
+            const numeroDaSala = `sala_${i}`; 
+            const agendamentosDestaSala = agendaDoDia[numeroDaSala] || {}; 
+            const salaReal = salasEmTempoReal[i-1] || { ocupantes: [] };
+            if (!salaReal.ocupantes) salaReal.ocupantes = [];
+
+            let ocupantesAtivos = [...salaReal.ocupantes];
+            let qtdAgendamentos = 0;
+
+            for (let idUnico in agendamentosDestaSala) {
+                let ag = agendamentosDestaSala[idUnico];
+                qtdAgendamentos++;
+                
+                // Se a hora chegou, ele entra na sala virtualmente (esperando clicar finalizar)
+                if (isHoje && horaAtualStr >= ag.inicio) {
+                    if (!ocupantesAtivos.some(o => o.terapeuta === ag.nome && o.horarioTexto && o.horarioTexto.includes(ag.inicio))) {
+                        ocupantesAtivos.push({
+                            terapeuta: ag.nome,
+                            paciente: ag.paciente,
+                            sindrome: ag.sindrome,
+                            horarioTexto: `${ag.inicio} às ${ag.fim}`,
+                            isAgendaVirtual: true,
+                            idAgenda: idUnico,
+                            inicio: ag.inicio,
+                            fim: ag.fim,
+                            tempoTotalDefinido: calcularDiffMinutos(ag.inicio, ag.fim)
+                        });
+                    }
+                }
+            }
+
+            let textoDaSala = `sala ${i} ` + JSON.stringify(agendamentosDestaSala).toLowerCase() + JSON.stringify(ocupantesAtivos).toLowerCase();
+            if (termoBusca !== "" && !textoDaSala.includes(termoBusca)) continue; 
+
+            let minhaSala = false;
+            if (usuarioAtual !== 'admin') {
+                Object.values(agendamentosDestaSala).forEach(ag => { if (ag.nome === nomeUsuarioAtual) minhaSala = true; });
+                ocupantesAtivos.forEach(oc => { if (oc.terapeuta === nomeUsuarioAtual) minhaSala = true; });
+            }
+
+            const divSala = document.createElement('div');
+            divSala.className = `sala ${minhaSala ? 'minha-sala' : ''}`; 
+            
+            let conteudoHTML = `
+                <div class="sala-header">
+                    <h3>Sala ${i}</h3>
+                    <button class="btn-adicionar" onclick="abrirModalAgendamento(${i})">+ Agendar</button>
+                </div>
+            `;
+            
+            if (isHoje) {
+                conteudoHTML += `<div style="margin-bottom: 5px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed #cbd5e1;">`;
+                
+                if (ocupantesAtivos.length === 0) {
+                    conteudoHTML += `<button class="btn-acao-sala" onclick="abrirModalCheckin(${i-1})"><span class="material-symbols-outlined" style="color:white;">login</span> Check-in na Sala</button>`;
+                } else {
+                    let euJaEstouNestaSala = false;
+                    
+                    ocupantesAtivos.forEach((ocupante, index) => {
+                        if (ocupante.terapeuta === nomeUsuarioAtual) euJaEstouNestaSala = true;
+                        
+                        let btnLiberar = "";
+                        if (usuarioAtual === 'admin' || ocupante.terapeuta === nomeUsuarioAtual) {
+                            if (ocupante.isAgendaVirtual) {
+                                // Se já passou da hora do fim, fica vermelho de Atrasado
+                                let atrasado = horaAtualStr > ocupante.fim;
+                                let btnCor = atrasado ? '#ef4444' : '#10b981';
+                                let txtBtn = atrasado ? 'Encerrar' : 'Finalizar';
+                                
+                                btnLiberar = `<button class="btn-liberar" style="background:${btnCor};" onclick="concluirAtendimentoAgendado(${i}, '${ocupante.idAgenda}', '${ocupante.terapeuta}', '${ocupante.paciente}', '${ocupante.sindrome}', ${ocupante.tempoTotalDefinido}, '${ocupante.inicio}', '${ocupante.fim}')"><span class="material-symbols-outlined" style="font-size:14px; margin:0;">check</span> ${txtBtn}</button>`;
+                            } else {
+                                btnLiberar = `<button class="btn-liberar" onclick="fazerCheckout(${i-1}, ${index})">Liberar</button>`;
+                            }
+                        }
+
+                        let crachaVirtual = ocupante.isAgendaVirtual ? `<span style="background:#dbeafe; color:#1e40af; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:5px;">Agendado</span>` : '';
+
+                        conteudoHTML += `
+                            <div class="bloco-paciente">
+                                <div>
+                                    <strong style="color:#007BFF">${ocupante.terapeuta}</strong> ${crachaVirtual}<br>
+                                    <span style="font-size:11px; color:#6b7280; display:inline-block; margin-top:3px;"><span class="material-symbols-outlined icon-sm">person</span> ${ocupante.paciente || 'Não informado'} | <span class="material-symbols-outlined icon-sm">medical_information</span> ${ocupante.sindrome || 'Não informado'}</span>
+                                    <br><span style="font-size:11px; color:#475569; font-weight:600;"><span class="material-symbols-outlined icon-sm">schedule</span> ${ocupante.horarioTexto || 'Em andamento'}</span>
+                                </div>
+                                ${btnLiberar}
+                            </div>
+                        `;
+                    });
+
+                    if (!euJaEstouNestaSala) {
+                        conteudoHTML += `<button class="btn-acao-sala secundario" onclick="abrirModalCheckin(${i-1})">+ Entrar nesta sala também</button>`;
+                    }
+                }
+                conteudoHTML += `</div>`;
+            } else {
+                conteudoHTML += `<div class="aviso-dia-diferente"><span class="material-symbols-outlined icon-sm">calendar_month</span> Exibindo data reservada.</div>`;
+            }
+            
+            // A NOVA GAVETA DE AGENDA
+            if (qtdAgendamentos > 0) {
+                conteudoHTML += `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f2f5;">
+                        <button class="btn-ver-agenda" onclick="abrirModalAgendaSala(${i})">
+                            <span class="material-symbols-outlined">event_note</span> Ver ${qtdAgendamentos} agendamento(s) do dia
+                        </button>
+                    </div>
+                `;
+            } else {
+                conteudoHTML += `<p style="font-size: 12px; color: #cbd5e1; font-style:italic; text-align:center; margin-top:15px;">Nenhum agendamento futuro hoje.</p>`;
+            }
+
+            divSala.innerHTML = conteudoHTML;
+            container.appendChild(divSala);
+        }
+    }
+
+    // Ação do botão "Finalizar" de um atendimento que veio direto da agenda
+    function concluirAtendimentoAgendado(numSala, idAgenda, terapeuta, paciente, sindrome, tempoTotal, inicio, fim) {
+        if (!confirm("Finalizar este atendimento agendado e registrar na Auditoria?")) return;
+
+        let novoRegistro = { 
+            terapeuta: terapeuta, 
+            especialidade: especialidadeAtual, 
+            sala: numSala, 
+            entrada: Date.now(), 
+            saida: Date.now(),
+            tempoTotal: tempoTotal, 
+            horarioTexto: `${inicio} às ${fim}`, // Guarda o texto exato para a auditoria
+            pacienteInfo: `${paciente} (${sindrome})`
+        };
+        
+        bancoDeDados.ref('clinica/historico_dados').push(novoRegistro);
+        bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${numSala}/${idAgenda}`).remove();
+    }
+
+
+    // ==========================================
+    // NOVA JANELA: VER AGENDA DA SALA
+    // ==========================================
+    function abrirModalAgendaSala(numeroSala) {
+        salaAtualModalAgenda = numeroSala;
+        document.getElementById('modal-agenda-num').innerText = numeroSala;
+        document.getElementById('pesquisa-agenda-modal').value = ""; 
+        renderizarListaAgendaModal();
+        document.getElementById('modal-overlay-agenda-sala').classList.remove('oculto');
+    }
+
+    function fecharModalAgendaSala() { document.getElementById('modal-overlay-agenda-sala').classList.add('oculto'); }
+
+    function renderizarListaAgendaModal() {
+        let listaContainer = document.getElementById('modal-agenda-lista');
+        listaContainer.innerHTML = '';
+        const termo = document.getElementById('pesquisa-agenda-modal').value.toLowerCase();
+
+        let agendamentosDaSala = agendaDoDia[`sala_${salaAtualModalAgenda}`] || {};
+        
+        let arrayAg = [];
+        for(let id in agendamentosDaSala) { arrayAg.push({id: id, ...agendamentosDaSala[id]}); }
+        arrayAg.sort((a,b) => a.inicio.localeCompare(b.inicio));
+
+        let itensMostrados = 0;
+
+        arrayAg.forEach(ag => {
+            let textoBusca = `${ag.nome} ${ag.paciente} ${ag.sindrome}`.toLowerCase();
+            if (termo !== "" && !textoBusca.includes(termo)) return;
+            itensMostrados++;
+
+            let btnExcluir = (usuarioAtual === 'admin' || ag.nome === nomeUsuarioAtual) 
+                ? `<button class="btn-acao-notif" style="color:#ef4444; padding:5px 10px;" onclick="removerAgendamento(${salaAtualModalAgenda}, '${ag.id}', true)"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>` : "";
+            
+            let pac = ag.paciente ? ag.paciente : "Não informado";
+            let sind = ag.sindrome ? ag.sindrome : "Não informado";
+
+            listaContainer.innerHTML += `
+                <div class="bloco-horario" style="margin-bottom:0; flex-direction:column; gap:5px;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <strong style="color:#2563eb; font-size:15px;">${ag.nome}</strong>
+                        ${btnExcluir}
+                    </div>
+                    <span style="font-size: 12px; color: #6b7280;"><span class="material-symbols-outlined icon-sm">person</span> ${pac} | <span class="material-symbols-outlined icon-sm">medical_information</span> ${sind}</span>
+                    <span style="font-size: 13px; color: #10b981; font-weight: 700; margin-top: 2px;"><span class="material-symbols-outlined icon-sm" style="color:#10b981;">schedule</span> ${ag.inicio} às ${ag.fim}</span>
+                </div>
+            `;
+        });
+
+        if(itensMostrados === 0) {
+            listaContainer.innerHTML = '<p style="text-align:center; color:#9ca3af; font-size:13px;">Nenhum agendamento encontrado.</p>';
+        }
+    }
+
+
+    // ==========================================
+    // FISCAL DE CONFLITOS INTELIGENTE
+    // ==========================================
+    function verificarConflitos(horaInicio, horaFim, numeroSalaReal, nomeUsuarioQueEstaTentando) {
+        let minInicioNovo = parseInt(horaInicio.split(':')[0])*60 + parseInt(horaInicio.split(':')[1]);
+        let minFimNovo = parseInt(horaFim.split(':')[0])*60 + parseInt(horaFim.split(':')[1]);
+        
+        let conflitosDeOutros = [];
+        let conflitosDeMimMesmo = [];
+        
+        let agendamentosDaSala = agendaDoDia[`sala_${numeroSalaReal}`] || {};
+        for (let id in agendamentosDaSala) {
+            let ag = agendamentosDaSala[id];
+            let minInicioAg = parseInt(ag.inicio.split(':')[0])*60 + parseInt(ag.inicio.split(':')[1]);
+            let minFimAg = parseInt(ag.fim.split(':')[0])*60 + parseInt(ag.fim.split(':')[1]);
+
+            if (minInicioNovo < minFimAg && minFimNovo > minInicioAg) {
+                if (ag.nome === nomeUsuarioQueEstaTentando) {
+                    conflitosDeMimMesmo.push(ag);
+                } else {
+                    conflitosDeOutros.push({ nome: ag.nome, inicio: ag.inicio, fim: ag.fim });
+                }
+            }
+        }
+
+        if (dataSelecionada === pegarDataDeHoje()) {
+            let salaReal = salasEmTempoReal[numeroSalaReal - 1] || { ocupantes: [] };
+            if (salaReal.ocupantes) {
+                salaReal.ocupantes.forEach(ocupante => {
+                    if (ocupante.horarioTexto) {
+                        let partes = ocupante.horarioTexto.split(' às ');
+                        if (partes.length === 2) {
+                            let minInicioReal = parseInt(partes[0].split(':')[0])*60 + parseInt(partes[0].split(':')[1]);
+                            let minFimReal = parseInt(partes[1].split(':')[0])*60 + parseInt(partes[1].split(':')[1]);
+
+                            if (minInicioNovo < minFimReal && minFimNovo > minInicioReal) {
+                                if (ocupante.terapeuta === nomeUsuarioQueEstaTentando) {
+                                    let jaListado = conflitosDeMimMesmo.find(s => s.inicio === partes[0]);
+                                    if(!jaListado) conflitosDeMimMesmo.push({ nome: ocupante.terapeuta, inicio: partes[0], fim: partes[1] });
+                                } else {
+                                    let jaListado = conflitosDeOutros.find(s => s.nome === ocupante.terapeuta);
+                                    if(!jaListado) conflitosDeOutros.push({ nome: ocupante.terapeuta, inicio: partes[0], fim: partes[1] });
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        return { outros: conflitosDeOutros, mim: conflitosDeMimMesmo };
+    }
+
+    function abrirModalAlerta(sobreposicoes) {
+        let ul = document.getElementById('lista-conflitos-alerta');
+        ul.innerHTML = '';
+        sobreposicoes.forEach(ag => {
+            ul.innerHTML += `<li style="margin-bottom:6px;"><strong>${ag.nome}</strong>: das ${ag.inicio} às ${ag.fim}</li>`;
+        });
+        document.getElementById('modal-overlay-alerta').classList.remove('oculto');
+    }
+
+    function cancelarConflito() { operacaoPendente = null; document.getElementById('modal-overlay-alerta').classList.add('oculto'); }
+
+    function confirmarConflito() {
+        document.getElementById('modal-overlay-alerta').classList.add('oculto');
+        if (!operacaoPendente) return;
+
+        let dataFormatadaAviso = dataSelecionada.split('-').reverse().join('/');
+        let op = operacaoPendente;
+
+        op.sobreposicoes.forEach(ag => {
+            bancoDeDados.ref('clinica/notificacoes').push({
+                remetente: "Sistema Automático",
+                destinatario: ag.nome,
+                mensagem: `🚨 Olá, ${ag.nome}!\n\nO profissional *${op.nomeGerador}* confirmou o uso da mesma sala que você (Sala ${op.numSala}) no dia ${dataFormatadaAviso} (das ${op.dados.inicio} às ${op.dados.fim}).\n\nCaso não seja possível atenderem juntos, conversem entre si.`,
+                dataHora: Date.now(), lido: false
+            });
+        });
+
+        if (op.tipo === 'agendamento') executarSalvarAgendamento(op.dados);
+        if (op.tipo === 'checkin') executarSalvarCheckin(op.dados);
+        operacaoPendente = null; 
+    }
+
+    // ==========================================
+    // CHECK-IN MANUAL
+    // ==========================================
+    function abrirModalCheckin(indexSala) {
+        salaSelecionadaModalCheckin = indexSala;
+        let salaReal = salasEmTempoReal[indexSala];
+        if (!salaReal.ocupantes) salaReal.ocupantes = [];
+
+        let jaOcupando = false;
+        salasEmTempoReal.forEach(s => { if(s.ocupantes && s.ocupantes.some(o => o.terapeuta === nomeUsuarioAtual)) jaOcupando = true; });
+        if (jaOcupando) return alert("Você já está em uma sala. Libere-a primeiro!");
+
+        document.getElementById('modal-sala-num-checkin').innerText = (indexSala + 1);
+        document.getElementById('modal-paciente-checkin').value = ""; document.getElementById('modal-sindrome-checkin').value = "";
+        document.getElementById('modal-hora-inicio-checkin').value = ""; document.getElementById('modal-hora-fim-checkin').value = "";
+        document.getElementById('modal-overlay-checkin').classList.remove('oculto');
+    }
+
+    function fecharModalCheckin() { document.getElementById('modal-overlay-checkin').classList.add('oculto'); }
+
+    function salvarCheckin() {
+        let paciente = document.getElementById('modal-paciente-checkin').value.trim() || "Não informado";
+        let sindrome = document.getElementById('modal-sindrome-checkin').value.trim() || "Não informado";
+        let inicio = document.getElementById('modal-hora-inicio-checkin').value;
+        let fim = document.getElementById('modal-hora-fim-checkin').value;
+
+        if (!inicio || !fim) return alert("Preencha o horário de início e fim!");
+        
+        if (inicio < pegarHoraAtualString()) return alert("Não é permitido fazer Check-in com início no passado.");
+        
+        let diffMinutos = calcularDiffMinutos(inicio, fim);
+        if (isNaN(diffMinutos) || diffMinutos <= 0) return alert("O horário de fim deve ser depois do início."); 
+
+        let dadosCheckin = { paciente, sindrome, inicio, fim, diffMinutos };
+        let conflitos = verificarConflitos(inicio, fim, salaSelecionadaModalCheckin + 1, nomeUsuarioAtual);
+        
+        if (conflitos.mim.length > 0) {
+            if(!confirm("Você já possui um registro neste horário. Deseja adicionar outro paciente junto?")) return;
+        }
+
+        if (conflitos.outros.length > 0) {
+            operacaoPendente = { tipo: 'checkin', dados: dadosCheckin, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalCheckin + 1, nomeGerador: nomeUsuarioAtual };
+            abrirModalAlerta(conflitos.outros);
+            return; 
+        }
+
+        executarSalvarCheckin(dadosCheckin);
+    }
+
+    function executarSalvarCheckin(dados) {
+        let salaReal = salasEmTempoReal[salaSelecionadaModalCheckin];
+        salaReal.ocupantes.push({
+            terapeuta: nomeUsuarioAtual, especialidade: especialidadeAtual,
+            paciente: dados.paciente, sindrome: dados.sindrome,
+            horarioTexto: `${dados.inicio} às ${dados.fim}`,
+            tempoTotalDefinido: dados.diffMinutos, horaEntrada: Date.now() 
+        });
+        bancoDeDados.ref('clinica/salas').set(salasEmTempoReal);
+        fecharModalCheckin();
+    }
+
+    function fazerCheckout(indexSala, indexOcupante) {
+        if (!confirm("Liberar sala e registrar histórico?")) return;
+        let salaReal = salasEmTempoReal[indexSala];
+        let ocupante = salaReal.ocupantes[indexOcupante];
+        let tempoMin = ocupante.tempoTotalDefinido || Math.round((Date.now() - ocupante.horaEntrada) / 60000); 
+
+        let novoRegistro = { 
+            terapeuta: ocupante.terapeuta, especialidade: ocupante.especialidade, 
+            sala: salaReal.numero, entrada: ocupante.horaEntrada, saida: Date.now(),
+            horarioTexto: ocupante.horarioTexto,
+            tempoTotal: tempoMin, pacienteInfo: `${ocupante.paciente} (${ocupante.sindrome})`
+        };
+        bancoDeDados.ref('clinica/historico_dados').push(novoRegistro);
+        salaReal.ocupantes.splice(indexOcupante, 1);
+        bancoDeDados.ref('clinica/salas').set(salasEmTempoReal);
+    }
+
+    // ==========================================
+    // AGENDAMENTO (MODAL)
+    // ==========================================
+    function abrirModalAgendamento(numeroSala) {
+        let hoje = pegarDataDeHoje();
+        if (usuarioAtual !== 'admin' && dataSelecionada < hoje) return alert("Agendamentos passados são restritos ao Admin.");
+
+        salaSelecionadaModalAgendamento = numeroSala;
+        document.getElementById('modal-sala-num-agendamento').innerText = numeroSala;
+        let selectHtml = "";
+        
+        if (usuarioAtual === 'admin') {
+            selectHtml = `<option value="" disabled selected>Escolha um profissional...</option>`;
+            listaUsuariosCadastrados.forEach(user => { if(user.email !== EMAIL_ADMIN) selectHtml += `<option value="${user.nome}">${user.nome}</option>`; });
+        } else { selectHtml = `<option value="${nomeUsuarioAtual}" selected>${nomeUsuarioAtual}</option>`; }
+        
+        document.getElementById('modal-select-user-agendamento').innerHTML = selectHtml;
+        document.getElementById('modal-paciente-agendamento').value = ""; document.getElementById('modal-sindrome-agendamento').value = "";
+        document.getElementById('modal-hora-inicio-agendamento').value = ""; document.getElementById('modal-hora-fim-agendamento').value = "";
+        document.getElementById('modal-overlay-agendamento').classList.remove('oculto');
+    }
+
+    function fecharModalAgendamento() { document.getElementById('modal-overlay-agendamento').classList.add('oculto'); }
+
+    function salvarAgendamento() {
+        let nome = document.getElementById('modal-select-user-agendamento').value;
+        let inicio = document.getElementById('modal-hora-inicio-agendamento').value;
+        let fim = document.getElementById('modal-hora-fim-agendamento').value;
+        let paciente = document.getElementById('modal-paciente-agendamento').value.trim() || "Não informado";
+        let sindrome = document.getElementById('modal-sindrome-agendamento').value.trim() || "Não informado";
+
+        if (!nome || !inicio || !fim) return alert("Preencha profissional e horários!");
+        
+        if (dataSelecionada === pegarDataDeHoje() && usuarioAtual !== 'admin') {
+            if (inicio < pegarHoraAtualString()) {
+                return alert("Não é permitido agendar em horários que já passaram hoje.");
+            }
+        }
+
+        let diffMinutos = calcularDiffMinutos(inicio, fim);
+        if (isNaN(diffMinutos) || diffMinutos <= 0) return alert("O término deve ser maior que o início.");
+
+        let dadosAgendamento = { nome, inicio, fim, paciente, sindrome };
+        let conflitos = verificarConflitos(inicio, fim, salaSelecionadaModalAgendamento, nome);
+        
+        if (conflitos.mim.length > 0) {
+            if(!confirm("Você já possui um agendamento neste horário. Deseja registrar outro paciente junto?")) return;
+        }
+
+        if (conflitos.outros.length > 0) {
+            operacaoPendente = { tipo: 'agendamento', dados: dadosAgendamento, sobreposicoes: conflitos.outros, numSala: salaSelecionadaModalAgendamento, nomeGerador: usuarioAtual === 'admin' ? "Administração" : nomeUsuarioAtual };
+            abrirModalAlerta(conflitos.outros);
+            return;
+        }
+        executarSalvarAgendamento(dadosAgendamento);
+    }
+
+    function executarSalvarAgendamento(dados) {
+        bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${salaSelecionadaModalAgendamento}`).push(dados).then((ref) => {
+            // AVISO IMEDIATO SE O ADMIN AGENDOU PARA O PROFISSIONAL
+            if (usuarioAtual === 'admin' && dados.nome !== nomeUsuarioAtual) {
+                let dataFormatada = dataSelecionada.split('-').reverse().join('/');
+                bancoDeDados.ref('clinica/notificacoes').push({
+                    remetente: "Administração",
+                    destinatario: dados.nome,
+                    mensagem: `📅 Novo Agendamento: Reservamos a Sala ${salaSelecionadaModalAgendamento} para você no dia ${dataFormatada}, das ${dados.inicio} às ${dados.fim}.`,
+                    dataHora: Date.now(), lido: false
+                });
+            }
+        });
+        fecharModalAgendamento();
+    }
+
+    function removerAgendamento(numeroSala, id, recarregarModal = false) {
+        if (confirm("Cancelar este horário?")) {
+            bancoDeDados.ref(`clinica/agenda/${dataSelecionada}/sala_${numeroSala}/${id}`).remove().then(()=> {
+                if(recarregarModal) renderizarListaAgendaModal();
+            });
+        }
+    }
+
+    // ==========================================
+    // O NOVO ROBÔ DE 5 MINUTOS INTELIGENTE
+    // ==========================================
+    function mostrarToast(mensagem) {
+        let toast = document.getElementById('toast-notificacao');
+        document.getElementById('toast-mensagem').innerText = mensagem;
+        toast.classList.remove('oculto');
+        setTimeout(() => toast.classList.add('oculto'), 8000); 
+    }
+
+    function checarNotificacoesAgendamento() {
+        if (!usuarioAtual || dataSelecionada !== pegarDataDeHoje()) return;
+        
+        let horaAtualStr = pegarHoraAtualString();
+
+        for (let i = 1; i <= NUMERO_DE_SALAS; i++) {
+            let agendamentos = agendaDoDia[`sala_${i}`] || {};
+            for (let id in agendamentos) {
+                let ag = agendamentos[id];
+                if (ag.nome === nomeUsuarioAtual) {
+                    
+                    let diffAgora = calcularDiffMinutos(horaAtualStr, ag.inicio);
+                    
+                    // Se faltam de 1 a 5 minutos para a consulta!
+                    if (diffAgora > 0 && diffAgora <= 5) {
+                        let key = `aviso_5m_${id}`;
+                        if (!sessionStorage.getItem(key)) {
+                            sessionStorage.setItem(key, 'true');
+                            mostrarToast(`Atenção: Seu atendimento na Sala ${i} com ${ag.paciente || 'paciente'} começa em ${diffAgora} minuto(s)!`);
+                            
+                            bancoDeDados.ref('clinica/notificacoes').push({
+                                remetente: "Sistema Automático",
+                                destinatario: nomeUsuarioAtual,
+                                mensagem: `⏰ Lembrete Automático: Seu atendimento com ${ag.paciente || 'paciente'} na Sala ${i} começará em ${diffAgora} minuto(s) (às ${ag.inicio}).`,
+                                dataHora: Date.now(), lido: false
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    setInterval(() => { 
+        if (usuarioAtual) {
+            renderizarSalas(); 
+            checarNotificacoesAgendamento();
+        }
+    }, 60000);
+
+    // ==========================================
+    // CONTROLE DE ABAS E MURAL
+    // ==========================================
+    function mudarAba(aba) {
+        document.getElementById('conteudo-salas').classList.add('oculto');
+        document.getElementById('conteudo-relatorios').classList.add('oculto');
+        document.getElementById('conteudo-usuarios').classList.add('oculto');
+        document.getElementById('conteudo-notificacoes').classList.add('oculto');
+        
+        document.getElementById('btn-nav-salas').classList.remove('ativo');
+        if(document.getElementById('btn-nav-relatorios')) document.getElementById('btn-nav-relatorios').classList.remove('ativo');
+        if(document.getElementById('btn-nav-usuarios')) document.getElementById('btn-nav-usuarios').classList.remove('ativo');
+        document.getElementById('btn-nav-notificacoes').classList.remove('ativo');
+        
+        document.getElementById(`conteudo-${aba}`).classList.remove('oculto');
+        document.getElementById(`btn-nav-${aba}`).classList.add('ativo');
+    }
+
+    function renderizarAbaUsuarios() {
+        const termoPesquisa = document.getElementById('pesquisa-equipe').value.toLowerCase();
+        const lista = document.getElementById('lista-usuarios-admin');
+        lista.innerHTML = '';
+        
+        const listaFiltrada = listaUsuariosCadastrados.filter(user => user.nome.toLowerCase().includes(termoPesquisa));
+        if (listaFiltrada.length === 0) return lista.innerHTML = '<li class="card-item">Nenhum profissional encontrado.</li>';
+
+        listaFiltrada.forEach(user => {
+            let btnExcluir = user.email !== EMAIL_ADMIN 
+                ? `<button class="btn-acao-notif" style="color:#ef4444;" onclick="excluirUsuarioBd('${user.id}', '${user.nome}')"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>` 
+                : `<span style="font-size:10px; color:#10b981; font-weight:bold;">Admin</span>`;
+            let li = document.createElement('li'); li.className = 'card-item';
+            li.style.display = 'flex'; li.style.justifyContent = 'space-between'; li.style.alignItems = 'center';
+            li.innerHTML = `<div><strong style="color:#1f2937;">${user.nome}</strong><br><span style="color:#6b7280; font-size:12px;">${user.especialidade}<br>${user.email}</span></div>${btnExcluir}`;
+            lista.appendChild(li);
+        });
+    }
+
+    function excluirUsuarioBd(uid, nome) { if (confirm(`Remover ${nome} da equipe?`)) bancoDeDados.ref('clinica/usuarios/' + uid).remove(); }
+
+    function prepararFiltrosRelatorio() {
+        const terapeutasSet = new Set();
+        registrosHistorico.forEach(reg => { if (typeof reg !== 'string' && reg.terapeuta) terapeutasSet.add(reg.terapeuta); });
+
+        const selectFiltro = document.getElementById('filtro-terapeuta');
+        const valorAtual = selectFiltro.value; 
+
+        selectFiltro.innerHTML = '<option value="todos">Visão Geral (Todos)</option>';
+        Array.from(terapeutasSet).sort().forEach(nome => { selectFiltro.innerHTML += `<option value="${nome}">${nome}</option>`; });
+        if (Array.from(terapeutasSet).includes(valorAtual)) selectFiltro.value = valorAtual;
+        else selectFiltro.value = 'todos';
+        renderizarDadosRelatorio();
+    }
+
+    // O NOVO LAYOUT DO RELATÓRIO
+    function renderizarDadosRelatorio() {
+        const filtroNome = document.getElementById('filtro-terapeuta').value;
+        const dataInicio = document.getElementById('filtro-data-inicio').value; 
+        const dataFim = document.getElementById('filtro-data-fim').value; 
+        
+        const lista = document.getElementById('lista-relatorios');
+        const resumo = document.getElementById('resumo-relatorio');
+        let totalMinutos = 0; lista.innerHTML = '';
+
+        const dadosFiltrados = registrosHistorico.filter(reg => {
+            if (typeof reg === 'string') return false; 
+            let passaNome = (filtroNome === 'todos') || (reg.terapeuta === filtroNome);
+            let dataRegistro = new Date(reg.entrada).toISOString().split('T')[0]; 
+            let passaDataInicio = dataInicio ? (dataRegistro >= dataInicio) : true;
+            let passaDataFim = dataFim ? (dataRegistro <= dataFim) : true;
+            return passaNome && passaDataInicio && passaDataFim; 
+        });
+
+        if (dadosFiltrados.length === 0) {
+            resumo.innerHTML = 'Nenhum uso registrado neste período.';
+            return lista.innerHTML = '<li class="card-item" style="text-align:center; color:#9ca3af;">Não há atendimentos para este filtro.</li>';
+        }
+
+        dadosFiltrados.forEach(reg => {
+            totalMinutos += reg.tempoTotal;
+            
+            let dataObjeto = new Date(reg.entrada);
+            let dataFormatada = dataObjeto.toLocaleDateString('pt-BR'); 
+            let horaEntradaFallback = dataObjeto.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            let horaSaidaFallback = new Date(reg.saida).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            
+            // Puxa o texto limpo (15:00 às 15:46) que salvamos na gaveta
+            let textoHorarioExibicao = reg.horarioTexto ? reg.horarioTexto : `${horaEntradaFallback} às ${horaSaidaFallback}`;
+
+            let li = document.createElement('li'); li.className = 'card-item';
+            li.innerHTML = `
+                <div style="border-bottom: 1px solid #f0f2f5; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #2563eb; font-size: 15px;">${reg.terapeuta}</strong>
+                    <span class="tag-data">${dataFormatada}</span>
+                </div>
+                <div class="linha-detalhe">
+                    <div><span class="material-symbols-outlined icon-sm">meeting_room</span> <strong>Sala:</strong> Sala ${reg.sala}</div>
+                    <div><span class="material-symbols-outlined icon-sm">person</span> <strong>Paciente:</strong> ${reg.pacienteInfo || 'Não informado'}</div>
+                    <div style="margin-top: 4px;"><span class="material-symbols-outlined icon-sm">timer</span> <strong>Tempo Computado:</strong> <span style="color: #10b981; font-weight: 700;">${reg.tempoTotal} min</span></div>
+                    <div style="margin-top: 2px;"><span class="material-symbols-outlined icon-sm">schedule</span> <strong>Período:</strong> Das ${textoHorarioExibicao}</div>
+                </div>
+            `;
+            lista.appendChild(li);
+        });
+
+        let horas = Math.floor(totalMinutos / 60); let min = totalMinutos % 60;
+        resumo.innerHTML = `Tempo Total da Seleção: <span style="color:#0f172a;">${horas > 0 ? `${horas}h ${min}m` : `${min} min`}</span>`;
+    }
+
+    function fecharMes() { if (confirm("ZERAR relatórios financeiros/horas?")) bancoDeDados.ref('clinica/historico_dados').remove(); }
+
+    function atualizarMenuDestinatarios() {
+        const select = document.getElementById('notif-destinatario');
+        select.innerHTML = '<option value="todos">Todos os Profissionais (Aviso Geral)</option>';
+        listaUsuariosCadastrados.forEach(user => { if(user.email !== EMAIL_ADMIN) select.innerHTML += `<option value="${user.nome}">${user.nome}</option>`; });
+    }
+
+    function enviarNotificacao() {
+        const destinatario = document.getElementById('notif-destinatario').value;
+        const mensagem = document.getElementById('notif-mensagem').value.trim();
+        if (!mensagem) return alert("Digite uma mensagem!");
+        bancoDeDados.ref('clinica/notificacoes').push({ remetente: "Administração", destinatario: destinatario, mensagem: mensagem, dataHora: Date.now(), lido: false }).then(() => {
+            alert("Aviso enviado!"); document.getElementById('notif-mensagem').value = ""; 
+        });
+    }
+
+    function abrirModalLimparAvisos() { document.getElementById('modal-overlay-limpar-avisos').classList.remove('oculto'); }
+    function fecharModalLimparAvisos() { document.getElementById('modal-overlay-limpar-avisos').classList.add('oculto'); }
+    function confirmarLimparAvisos() { bancoDeDados.ref('clinica/notificacoes').remove().then(() => { fecharModalLimparAvisos(); }); }
+
+    function renderizarAvisos() {
+        const container = document.getElementById('lista-notificacoes');
+        container.innerHTML = '';
+        const avisosParaMim = muralNotificacoes.filter(aviso => {
+            if (usuarioAtual === 'admin') return true; 
+            return (aviso.destinatario === 'todos' || aviso.destinatario === nomeUsuarioAtual);
+        });
+
+        if (avisosParaMim.length === 0) return container.innerHTML = '<p style="color:#9ca3af; font-size:13px; text-align:center;">Nenhum recado no mural.</p>';
+
+        avisosParaMim.forEach(aviso => {
+            let dataStr = new Date(aviso.dataHora).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'});
+            let etiqueta = aviso.destinatario === 'todos' 
+                ? `<span style="background: #f1f5f9; color: #475569; font-size: 10px; padding: 4px 8px; border-radius: 6px; float: right; font-weight:bold;">Aviso Geral</span>`
+                : `<span style="background: #eff6ff; color: #1e40af; font-size: 10px; padding: 4px 8px; border-radius: 6px; float: right; font-weight:bold;">Para: ${aviso.destinatario}</span>`;
+
+            let painelAdmin = "";
+            if (usuarioAtual === 'admin') {
+                let statusLido = aviso.destinatario === 'todos' ? "" : (aviso.lido ? `<span style="color: #10b981; font-size: 11px; margin-left: 5px; font-weight:600;">(✅ Lido)</span>` : `<span style="color: #ef4444; font-size: 11px; margin-left: 5px; font-weight:600;">(⏳ Não lido)</span>`);
+                painelAdmin = `
+                    <div style="margin-top: 15px; padding-top: 12px; border-top: 1px solid #f0f2f5; display: flex; justify-content: space-between; align-items: center;">
+                        <div>${statusLido}</div>
+                        <div>
+                            <button class="btn-acao-notif" style="color:#2563eb;" onclick="editarAviso('${aviso.id}', '${aviso.mensagem.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined icon-sm" style="color:#2563eb;">edit</span></button>
+                            <button class="btn-acao-notif" style="color:#ef4444;" onclick="excluirAviso('${aviso.id}')"><span class="material-symbols-outlined icon-sm" style="color:#ef4444;">delete</span></button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let painelTerapeuta = "";
+            if (usuarioAtual === 'terapeuta' && aviso.destinatario === nomeUsuarioAtual && !aviso.lido) {
+                painelTerapeuta = `<button style="background: linear-gradient(135deg, #10b981, #059669); color:white; border:none; border-radius:8px; padding: 8px 12px; font-size:12px; font-weight:600; cursor:pointer; margin-top:12px; box-shadow:0 2px 8px rgba(16,185,129,0.3); display:flex; align-items:center;" onclick="marcarAvisoLido('${aviso.id}')"><span class="material-symbols-outlined icon-sm" style="color:white; font-size:16px;">check_circle</span> Marcar como Lido</button>`;
+            }
+
+            let div = document.createElement('div');
+            div.className = 'bloco-notificacao';
+            div.innerHTML = `
+                ${etiqueta}
+                <span class="notif-data">Postado em: ${dataStr}</span>
+                <p class="notif-msg">${aviso.mensagem.replace(/\n/g, '<br>')}</p>
+                ${painelTerapeuta}
+                ${painelAdmin}
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function excluirAviso(id) { if(confirm("Tem certeza que deseja apagar este aviso?")) bancoDeDados.ref('clinica/notificacoes/' + id).remove(); }
+    function editarAviso(id, msgAtual) {
+        let novaMsg = prompt("Edite o aviso:", msgAtual);
+        if(novaMsg && novaMsg.trim() !== "") bancoDeDados.ref('clinica/notificacoes/' + id).update({mensagem: novaMsg});
+    }
+    function marcarAvisoLido(id) { bancoDeDados.ref('clinica/notificacoes/' + id).update({lido: true}); }
+
+</script>
+</body>
+</html>
